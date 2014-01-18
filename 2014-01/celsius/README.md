@@ -23,3 +23,18 @@ Temperature conversion example.
 `fourth.go`
 
 * satisfying the Stringer interface
+
+### Almanac
+
+`first.go`
+
+* structures, slices (variable length arrays)
+* composite literals, also demonstrate name/value syntax 
+
+`second.go`
+
+* Climate type, methods on a slice
+* for range loops
+
+
+
