@@ -12,6 +12,6 @@ func main() {
 }
 
 // CelsiusToFahrenheit converts temperature to share with our American friends.
-func CelsiusToFahrenheit(t float64) float64 {
-	return (t * 9 / 5) + 32
+func CelsiusToFahrenheit(c float64) float64 {
+	return (c * 9 / 5) + 32
 }
