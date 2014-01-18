@@ -44,6 +44,22 @@ var climate = []Weather{
 	{2013, -2.2, -16.7},
 }
 
+// Warmest returns the warmer of two weather datums
+func Warmest(weather1, weather2 Weather) Weather {
+	if weather2.max > weather1.max {
+		return weather2
+	}
+	return weather1
+}
+
+// Coldest returns the colder of two weather datums
+func Coldest(weather1, weather2 Weather) Weather {
+	if weather2.min < weather1.min {
+		return weather2
+	}
+	return weather1
+}
+
 // Celsius represents a temperature
 type Celsius float64
 

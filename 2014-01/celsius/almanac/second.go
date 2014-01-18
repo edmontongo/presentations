@@ -19,8 +19,10 @@ type Weather struct {
 	max, min Celsius
 }
 
+// Climate holds the weather across many days
 type Climate []Weather
 
+// Warmest finds the warmest weather
 func (climate Climate) Warmest() Weather {
 	warmest := Weather{max: -math.MaxFloat64}
 
@@ -30,6 +32,7 @@ func (climate Climate) Warmest() Weather {
 	return warmest
 }
 
+// Coldest finds the coldest weather
 func (climate Climate) Coldest() Weather {
 	coldest := Weather{min: math.MaxFloat64}
 
@@ -37,20 +40,6 @@ func (climate Climate) Coldest() Weather {
 		coldest = Coldest(coldest, w)
 	}
 	return coldest
-}
-
-func Warmest(weather1, weather2 Weather) Weather {
-	if weather2.max > weather1.max {
-		return weather2
-	}
-	return weather1
-}
-
-func Coldest(weather1, weather2 Weather) Weather {
-	if weather2.min < weather1.min {
-		return weather2
-	}
-	return weather1
 }
 
 // January 27th temperatures in Edmonton, Alberta
@@ -81,6 +70,22 @@ var climate = Climate{
 	{2011, 8.7, -2.8},
 	{2012, 0.2, -7.6},
 	{2013, -2.2, -16.7},
+}
+
+// Warmest returns the warmer of two weather datums
+func Warmest(weather1, weather2 Weather) Weather {
+	if weather2.max > weather1.max {
+		return weather2
+	}
+	return weather1
+}
+
+// Coldest returns the colder of two weather datums
+func Coldest(weather1, weather2 Weather) Weather {
+	if weather2.min < weather1.min {
+		return weather2
+	}
+	return weather1
 }
 
 // Celsius represents a temperature

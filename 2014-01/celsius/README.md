@@ -26,14 +26,18 @@ Temperature conversion example.
 
 ### Almanac
 
+Aggregation functions on [Environment Canada data](http://edmonton.weatherstats.ca/download.html).
+
 `first.go`
 
 * structures, slices (variable length arrays)
-* composite literals, also demonstrate name/value syntax 
+* composite literals
 
 `second.go`
 
-* Climate type, methods on a slice
+* Climate type
+* methods on a slice
+* name/value syntax for composite literals
 * for range loops
 
 
