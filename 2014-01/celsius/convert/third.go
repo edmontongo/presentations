@@ -4,8 +4,8 @@ import (
 	"fmt"
 )
 
-type Celsius float64
-type Fahrenheit float64
+type Celsius float32
+type Fahrenheit float32
 
 func main() {
 	c := Celsius(-1.0)
