@@ -132,17 +132,6 @@ func (b *Balancer) print() {
 
 // Send Request to worker
 func (b *Balancer) dispatch(req Request) {
-	if false {
-		w := b.pool[b.i]
-		w.requests <- req
-		w.pending++
-		b.i++
-		if b.i >= len(b.pool) {
-			b.i = 0
-		}
-		return
-	}
-
 	w := heap.Pop(&b.pool).(*Worker) // Grab the least loaded worker...
 	w.requests <- req                // ...send it the task.
 	w.pending++                      // One more in its work queue.
@@ -152,11 +141,6 @@ func (b *Balancer) dispatch(req Request) {
 
 // Job is complete; update heap
 func (b *Balancer) completed(w *Worker) {
-	if false {
-		w.pending--
-		return
-	}
-
 	w.pending-- // One fewer in the queue.
 	//	fmt.Printf("finished %p; now %d\n", w, w.pending)
 	heap.Remove(&b.pool, w.i) // Remove it from heap.
