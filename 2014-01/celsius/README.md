@@ -8,12 +8,11 @@ Temperature conversion example.
 
 * packages, main
 * float32, declaration, assignment, initialization
-* procedural conversion function
-* format strings (width and precision)
 
 `second.go`
 
 * shortcut for declare & initialize
+* format strings (width and precision)
 * introduce user-defined types and type conversion
 * demonstrate mismatched types and explain underlying types
 
