@@ -6,8 +6,10 @@ Temperature conversion example.
 
 `first.go` 
 
+* packages, main
+* float32, declaration, assignment, initialization
 * procedural conversion function
-* packages, main, float64, format strings (width and precision)
+* format strings (width and precision)
 
 `second.go`
 
