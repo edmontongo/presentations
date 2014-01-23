@@ -1,5 +1,3 @@
-// +build OMIT
-
 package main
 
 import (
@@ -19,36 +17,44 @@ func op() int {
 	return int(n)
 }
 
+// The requester sends Requests to the balancer.
 type Request struct {
-	fn func() int
-	c  chan int
+	fn func() int // The operation to perform.
+	c  chan int   // The channel to return the result.
 }
 
-func requester(work chan Request) {
+// An artificial but illustrative simulation of a requester, a load generator.
+func requester(work chan<- Request) {
 	c := make(chan int)
 	for {
+		// Kill some time (fake load).
 		time.Sleep(time.Duration(rand.Int63n(int64(nWorker * 2 * time.Second))))
-		work <- Request{op, c}
-		<-c
+		work <- Request{op, c} // send request
+		<-c                    // wait for answer
+		// furtherProcess(result)
 	}
 }
 
+// A channel of requests, plus some load tracking data.
 type Worker struct {
-	i        int
-	requests chan Request
-	pending  int
+	i        int          // index in the heap
+	requests chan Request // work to do (buffered channel)
+	pending  int          // count of pending tasks
 }
 
+// Balancer sends request to most lightly loaded worker.
 func (w *Worker) work(done chan *Worker) {
+	// Could run the loop body as a goroutine for parallelism.
 	for {
-		req := <-w.requests
-		req.c <- req.fn()
-		done <- w
+		req := <-w.requests // get Request from balancer
+		req.c <- req.fn()   // call fn and send result (directly to its requester)
+		done <- w           // we've finished this request
 	}
 }
 
 type Pool []*Worker
 
+// Make Pool an implementation of the Heap interface by providing a few methods.
 func (p Pool) Len() int { return len(p) }
 
 func (p Pool) Less(i, j int) bool {
@@ -80,6 +86,8 @@ func (p *Pool) Pop() interface{} {
 	return w
 }
 
+// The load balancer needs a pool of workers and a single channel
+// to which requesters can report task completion.
 type Balancer struct {
 	pool Pool
 	done chan *Worker
@@ -100,10 +108,10 @@ func NewBalancer() *Balancer {
 func (b *Balancer) balance(work chan Request) {
 	for {
 		select {
-		case req := <-work:
-			b.dispatch(req)
-		case w := <-b.done:
-			b.completed(w)
+		case req := <-work: // received a Request...
+			b.dispatch(req) // ...so send it to a Worker
+		case w := <-b.done: // a worker has finished...
+			b.completed(w) // ...so update its info
 		}
 		b.print()
 	}
@@ -122,6 +130,7 @@ func (b *Balancer) print() {
 	fmt.Printf(" %.2f %.2f\n", avg, variance)
 }
 
+// Send Request to worker
 func (b *Balancer) dispatch(req Request) {
 	if false {
 		w := b.pool[b.i]
@@ -134,23 +143,24 @@ func (b *Balancer) dispatch(req Request) {
 		return
 	}
 
-	w := heap.Pop(&b.pool).(*Worker)
-	w.requests <- req
-	w.pending++
+	w := heap.Pop(&b.pool).(*Worker) // Grab the least loaded worker...
+	w.requests <- req                // ...send it the task.
+	w.pending++                      // One more in its work queue.
 	//	fmt.Printf("started %p; now %d\n", w, w.pending)
-	heap.Push(&b.pool, w)
+	heap.Push(&b.pool, w) // Put it into its place on the heap.
 }
 
+// Job is complete; update heap
 func (b *Balancer) completed(w *Worker) {
 	if false {
 		w.pending--
 		return
 	}
 
-	w.pending--
+	w.pending-- // One fewer in the queue.
 	//	fmt.Printf("finished %p; now %d\n", w, w.pending)
-	heap.Remove(&b.pool, w.i)
-	heap.Push(&b.pool, w)
+	heap.Remove(&b.pool, w.i) // Remove it from heap.
+	heap.Push(&b.pool, w)     // Put it into its place on the heap.
 }
 
 func main() {
