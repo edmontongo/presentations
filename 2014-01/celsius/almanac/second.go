@@ -24,7 +24,7 @@ type Climate []Weather
 
 // Warmest finds the warmest weather
 func (climate Climate) Warmest() Weather {
-	warmest := Weather{max: -math.MaxFloat32}
+	warmest := Weather{max: -math.MaxFloat64}
 
 	for _, w := range climate {
 		warmest = Warmest(warmest, w)
@@ -34,7 +34,7 @@ func (climate Climate) Warmest() Weather {
 
 // Coldest finds the coldest weather
 func (climate Climate) Coldest() Weather {
-	coldest := Weather{min: math.MaxFloat32}
+	coldest := Weather{min: math.MaxFloat64}
 
 	for _, w := range climate {
 		coldest = Coldest(coldest, w)
@@ -89,7 +89,7 @@ func Coldest(weather1, weather2 Weather) Weather {
 }
 
 // Celsius represents a temperature
-type Celsius float32
+type Celsius float64
 
 // String returns a pretty printed temperature
 func (c Celsius) String() string {

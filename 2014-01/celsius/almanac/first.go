@@ -61,7 +61,7 @@ func Coldest(weather1, weather2 Weather) Weather {
 }
 
 // Celsius represents a temperature
-type Celsius float32
+type Celsius float64
 
 // String returns a pretty printed temperature
 func (c Celsius) String() string {
