@@ -8,10 +8,10 @@ func main() {
 	var c, f float64
 	c = -1.0
 	f = CelsiusToFahrenheit(c)
-	fmt.Printf("%4.2fºC is %4.2fºF\n", c, f)
+	fmt.Printf("%vºC is %vºF\n", c, f)
 }
 
-// CelsiusToFahrenheit converts temperature to share with our American friends.
+// CelsiusToFahrenheit converts temperature for our American friends.
 func CelsiusToFahrenheit(c float64) float64 {
 	return (c * 9 / 5) + 32
 }

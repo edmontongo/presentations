@@ -17,7 +17,7 @@ func main() {
 	// }
 }
 
-// CelsiusToFahrenheit converts temperature to share with our American friends.
+// CelsiusToFahrenheit converts temperature for our American friends.
 func CelsiusToFahrenheit(c Celsius) Fahrenheit {
 	return Fahrenheit((c * 9 / 5) + 32)
 }

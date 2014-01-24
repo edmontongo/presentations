@@ -15,7 +15,7 @@ func main() {
 	fmt.Printf("%v is %v\n", f, f.ToCelsius())
 }
 
-// ToFahrenheit converts temperature to share with our American friends.
+// ToFahrenheit converts temperature for our American friends.
 func (c Celsius) ToFahrenheit() Fahrenheit {
 	return Fahrenheit((c * 9 / 5) + 32)
 }

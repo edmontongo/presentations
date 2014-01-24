@@ -12,7 +12,7 @@ func main() {
 	fmt.Printf("%4.2fºC is %4.2fºF\n", c, c.ToFahrenheit())
 }
 
-// ToFahrenheit converts temperature to share with our American friends.
+// ToFahrenheit converts temperature for our American friends.
 func (c Celsius) ToFahrenheit() Fahrenheit {
 	return Fahrenheit((c * 9 / 5) + 32)
 }
