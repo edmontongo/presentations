@@ -5,11 +5,11 @@ import (
 )
 
 func main() {
-	w1 := climate.Warmest()
-	fmt.Printf("Warmest was %v in %d.\n", w1.max, w1.year)
+	w1 := climateEdmonton.Warmest()
+	fmt.Printf("Highest temperature was %v in %d.\n", w1.max, w1.year)
 
-	w2 := climate.Coldest()
-	fmt.Printf("Coldest was %v in %d.\n", w2.min, w2.year)
+	w2 := climateEdmonton.Coldest()
+	fmt.Printf("Lowest temperature was %v in %d.\n", w2.min, w2.year)
 }
 
 // Weather holds the maximum and minimum temperatures for a given day
@@ -21,29 +21,9 @@ type Weather struct {
 // Climate holds the weather across many days
 type Climate []Weather
 
-// Warmest finds the warmest weather
-func (climate Climate) Warmest() Weather {
-	warmest := climate[0]
-
-	for _, w := range climate {
-		warmest = Warmest(warmest, w)
-	}
-	return warmest
-}
-
-// Coldest finds the coldest weather
-func (climate Climate) Coldest() Weather {
-	coldest := climate[0]
-
-	for _, w := range climate {
-		coldest = Coldest(coldest, w)
-	}
-	return coldest
-}
-
 // January 27th temperatures in Edmonton, Alberta
 // data downloaded from http://edmonton.weatherstats.ca/download.html
-var climate = Climate{
+var climateEdmonton = Climate{
 	{1988, 0.2, -5.9},
 	{1989, 10.7, -3.7},
 	{1990, -11.7, -17.5},
@@ -71,16 +51,36 @@ var climate = Climate{
 	{2013, -2.2, -16.7},
 }
 
-// Warmest returns the warmer of two weather datums
-func Warmest(weather1, weather2 Weather) Weather {
+// Warmest finds the warmest weather
+func (climate Climate) Warmest() Weather {
+	warmest := climate[0]
+
+	for _, w := range climate {
+		warmest = Warmer(warmest, w)
+	}
+	return warmest
+}
+
+// Warmer returns the warmer of two weather datums
+func Warmer(weather1, weather2 Weather) Weather {
 	if weather2.max > weather1.max {
 		return weather2
 	}
 	return weather1
 }
 
-// Coldest returns the colder of two weather datums
-func Coldest(weather1, weather2 Weather) Weather {
+// Coldest finds the coldest weather
+func (climate Climate) Coldest() Weather {
+	coldest := climate[0]
+
+	for _, w := range climate {
+		coldest = Colder(coldest, w)
+	}
+	return coldest
+}
+
+// Colder returns the colder of two weather datums
+func Colder(weather1, weather2 Weather) Weather {
 	if weather2.min < weather1.min {
 		return weather2
 	}
