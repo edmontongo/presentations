@@ -6,8 +6,7 @@ Temperature conversion example.
 
 `first.go` 
 
-* packages, main
-* float64, declaration, assignment, initialization
+* main, float64, declaration, assignment, initialization
 * format strings (value, %4.2f width.precision)
 * function signature
 
@@ -36,6 +35,3 @@ Aggregation functions on [Environment Canada data](http://edmonton.weatherstats.
 * Climate type, methods on a slice
 * name/value syntax for composite literals
 * for range loops, underscore
-
-
-
