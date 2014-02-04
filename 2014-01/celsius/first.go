@@ -6,7 +6,7 @@ import (
 
 func main() {
 	var c, f float64
-	c = -1.0
+	c = 0.0
 	f = CelsiusToFahrenheit(c)
 	fmt.Printf("%vºC is %vºF\n", c, f)
 }
