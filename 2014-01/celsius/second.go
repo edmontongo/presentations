@@ -10,7 +10,7 @@ type Fahrenheit float64
 func main() {
 	c := Celsius(-1.0)
 	f := CelsiusToFahrenheit(c)
-	fmt.Printf("%4.2fºC is %4.2fºF\n", c, f)
+	fmt.Printf("%.2fºC is %.2fºF\n", c, f)
 
 	// if c == f {
 	// 	fmt.Println("Match")

@@ -9,7 +9,7 @@ type Fahrenheit float64
 
 func main() {
 	c := Celsius(-1.0)
-	fmt.Printf("%4.2fºC is %4.2fºF\n", c, c.ToFahrenheit())
+	fmt.Printf("%.2fºC is %.2fºF\n", c, c.ToFahrenheit())
 }
 
 // ToFahrenheit converts temperature for our American friends.

@@ -93,5 +93,5 @@ type Celsius float64
 
 // String returns a pretty printed temperature
 func (c Celsius) String() string {
-	return fmt.Sprintf("%4.2fºC", c)
+	return fmt.Sprintf("%.2fºC", c)
 }
