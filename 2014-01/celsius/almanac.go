@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 )
 
 func main() {
@@ -53,7 +54,7 @@ var climateEdmonton = Climate{
 
 // Warmest finds the warmest weather
 func (climate Climate) Warmest() Weather {
-	warmest := climate[0]
+	warmest := Weather{max: -math.MaxFloat64}
 
 	for _, w := range climate {
 		warmest = Warmer(warmest, w)
@@ -71,7 +72,7 @@ func Warmer(weather1, weather2 Weather) Weather {
 
 // Coldest finds the coldest weather
 func (climate Climate) Coldest() Weather {
-	coldest := climate[0]
+	coldest := Weather{min: math.MaxFloat64}
 
 	for _, w := range climate {
 		coldest = Colder(coldest, w)
