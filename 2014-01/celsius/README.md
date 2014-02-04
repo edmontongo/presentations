@@ -24,6 +24,7 @@ Temperature conversion example.
 `fourth.go`
 
 * satisfying the Stringer interface
+* stack overflow with %v
 
 ### Almanac
 
