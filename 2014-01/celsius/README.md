@@ -41,9 +41,9 @@ Aggregation functions on [Environment Canada data](http://edmonton.weatherstats.
 
 Go's approach to object-oriented programming is a little different. In this episode, we will introduce types & methods into a temperature conversion tool. 
 
-It was a balmy -18 here, so if we run this, we'll see that it was 0.4 degrees Fahrenheit.
+It was a balmy -18, so if we run this, we'll see that it was -0.4 degrees Fahrenheit.
 
-Hmm. The default formatting could be better. Instead of %v for value, let's specify %f for float, with a precision. Okay.
+The default formatting could be better. Instead of %v for value, let's specify %f for float, with a precision. Okay.
 
 Next, let's add two user-defined types. Celsius and Fahrenheit, both which are floats. With that we can change our function to take a Celsius and return a Fahrenheit.
 
