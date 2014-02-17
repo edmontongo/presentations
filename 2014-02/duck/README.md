@@ -22,7 +22,7 @@ ClayPigeon does not implement Talker.
 
 `sixth.go`
 
-Type switches, and [calling things the interface doesn't include](http://how-bazaar.blogspot.co.nz/2013/07/stunned-by-go.html).
+Type assertions, and [calling things the interface doesn't specify](http://how-bazaar.blogspot.co.nz/2013/07/stunned-by-go.html).
 
 `stack.go`
 
@@ -30,7 +30,7 @@ Empty interfaces satisfied by any type.
 
 `stack2.go`
 
-What happens when we put a duck on the stack?
+What happens when we put a duck on the stack? Type switches.
 
-Type assertions.
+
 

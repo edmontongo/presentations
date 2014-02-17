@@ -49,10 +49,10 @@ func main() {
 	stack.Push(Duck{})
 
 	for stack.Len() > 0 {
-		s := stack.Pop()
-		if duck, ok := s.(Duck); ok {
-			fmt.Println(duck.Talk())
-		} else {
+		switch s := stack.Pop().(type) {
+		case Duck:
+			fmt.Println(s.Talk())
+		case string:
 			fmt.Println(s)
 		}
 	}

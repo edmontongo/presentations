@@ -8,8 +8,8 @@ func (duck Duck) Talk() string {
 	return "Quack!"
 }
 
-func (duck Duck) Fly() string {
-	return "flap flap"
+func (duck Duck) Fly() {
+	fmt.Println("flap flap")
 }
 
 type Dog struct{}
@@ -20,13 +20,9 @@ func (dog Dog) Talk() string {
 
 // If it is a duck...
 func IsDuck(s Talker) bool {
-	switch t := s.(type) {
-	default:
-		return false
-	case Duck:
-		fmt.Println(t.Fly())
-		return true
-	}
+	duck, ok := s.(Duck)
+	duck.Fly() // don't use type assertions for evil
+	return ok
 }
 
 type Talker interface {
