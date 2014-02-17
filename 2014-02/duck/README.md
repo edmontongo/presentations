@@ -28,7 +28,7 @@ Type assertions, and [calling things the interface doesn't specify](http://how-b
 
 Empty interfaces satisfied by any type.
 
-`stack2.go`
+`second-stack.go`
 
 What happens when we put a duck on the stack? Type switches.
 
