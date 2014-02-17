@@ -4,11 +4,11 @@ import "fmt"
 
 type Duck struct{}
 
-func (duck Duck) Speak() string {
+func (duck Duck) Talk() string {
 	return "Quack!"
 }
 
 func main() {
 	donald := Duck{}
-	fmt.Println(donald.Speak())
+	fmt.Println(donald.Talk())
 }

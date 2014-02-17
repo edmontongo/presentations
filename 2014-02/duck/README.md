@@ -2,7 +2,7 @@
 
 `first.go` 
 
-A duck that speaks.
+A duck that talks.
 
 `second.go`
 
@@ -14,11 +14,11 @@ Add a [laughing dog](http://www.youtube.com/watch?v=g1QCbXCezNc).
 
 `fourth.go`
 
-A Speaker interface.
+A Talker interface.
 
 `fifth.go`
 
-ClayPigeon does not implement Speaker.
+ClayPigeon does not implement Talker.
 
 `sixth.go`
 

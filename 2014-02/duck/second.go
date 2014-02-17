@@ -4,16 +4,17 @@ import "fmt"
 
 type Duck struct{}
 
-func (duck Duck) Speak() string {
+func (duck Duck) Talk() string {
 	return "Quack!"
 }
 
+// If it quacks like a duck...
 func IsDuck(duck Duck) bool {
-	return duck.Speak() == "Quack!"
+	return duck.Talk() == "Quack!"
 }
 
 func main() {
 	donald := Duck{}
-	fmt.Println(donald.Speak())
+	fmt.Println(donald.Talk())
 	fmt.Println("Is a duck?", IsDuck(donald))
 }
