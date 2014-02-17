@@ -24,4 +24,13 @@ ClayPigeon does not implement Talker.
 
 Type switches, and [calling things the interface doesn't include](http://how-bazaar.blogspot.co.nz/2013/07/stunned-by-go.html).
 
+`stack.go`
+
+Empty interfaces satisfied by any type.
+
+`stack2.go`
+
+What happens when we put a duck on the stack?
+
+Type assertions.
 
