@@ -38,7 +38,7 @@ func (s *Stack) Pop() (value interface{}) {
 
 type Duck struct{}
 
-func (duck Duck) Talk() string {
+func (duck Duck) Speak() string {
 	return "Quack!"
 }
 
@@ -51,7 +51,7 @@ func main() {
 	for stack.Len() > 0 {
 		switch s := stack.Pop().(type) {
 		case Duck:
-			fmt.Println(s.Talk())
+			fmt.Println(s.Speak())
 		case string:
 			fmt.Println(s)
 		}

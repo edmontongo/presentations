@@ -4,26 +4,36 @@ import "fmt"
 
 type Duck struct{}
 
-func (duck Duck) Talk() string {
+func (duck Duck) Speak() string {
 	return "Quack!"
 }
 
 type Dog struct{}
 
-func (dog Dog) Talk() string {
-	return "🐶 LOL"
+func (dog Dog) Speak() string {
+	return "\U0001F436 LOL"
 }
 
+type ClayPigeon struct{}
+
 // If it quacks like a duck...
-func IsDuck(duck Duck) bool {
-	return duck.Talk() == "Quack!"
+func IsDuck(s Speaker) bool {
+	return s.Speak() == "Quack!"
+}
+
+type Speaker interface {
+	Speak() string
 }
 
 func main() {
 	donald := Duck{}
-	fmt.Println(donald.Talk())
+	fmt.Println(donald.Speak())
 	fmt.Println("Is a duck?", IsDuck(donald))
 
 	laughingDog := Dog{}
-	fmt.Println(laughingDog.Talk())
+	fmt.Println(laughingDog.Speak())
+	fmt.Println("Is a duck?", IsDuck(laughingDog))
+
+	clay := ClayPigeon{}
+	fmt.Println("Is a duck?", IsDuck(clay))
 }
