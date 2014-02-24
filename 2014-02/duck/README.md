@@ -2,8 +2,8 @@
 
 ### Notes
 
-* types & methods
-* duck typing, care about behaviour
+* types & methods, implemented Stringer interface
+* duck typing, behaviour, flexibility
 
 `first.go` 
 
@@ -18,6 +18,7 @@
 `third.go`
 
 * ClayPigeon does not implement Speaker.
+* Worth noting: interfaces apply across package boundaries.
 
 `fourth.go`
 
@@ -43,3 +44,4 @@
 * [Effective Go](http://golang.org/doc/effective_go.html#interfaces)
 * [Go Data Structures: Interfaces](http://research.swtch.com/interfaces)
 * [Stunned by Go](http://how-bazaar.blogspot.co.nz/2013/07/stunned-by-go.html)
+* [Top Ten Reasons Cocoa is Great Because of Objective-C](http://www.informit.com/articles/article.aspx?p=1353396) (#5 is duck typing)
