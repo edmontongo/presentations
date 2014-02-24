@@ -22,7 +22,7 @@
 
 `fourth.go`
 
-* Rather silly example. Type assertions.
+* Rather silly example. Type assertions (at runtime).
 
 `fifth.go`
 
