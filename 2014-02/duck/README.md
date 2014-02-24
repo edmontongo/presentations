@@ -1,13 +1,6 @@
 ## Duck Hunt: Interfaces in Go
 
-* [Laughing dog](http://www.youtube.com/watch?v=g1QCbXCezNc) (video)
-* [Interfaces: A new leaf in an old book](http://video.fosdem.org/2014/K4601/Sunday/Interfaces_a_new_leaf_for_an_old_book.webm) (video)
-* [Effective Go](http://golang.org/doc/effective_go.html#interfaces)
-* [Built In Interfaces](http://jmoiron.net/blog/built-in-interfaces/)
-* [Go Data Structures: Interfaces](http://research.swtch.com/interfaces)
-* [Stunned by Go](http://how-bazaar.blogspot.co.nz/2013/07/stunned-by-go.html)
-
-## Notes
+### Notes
 
 * types & methods
 * duck typing, care about behaviour
@@ -36,10 +29,17 @@
 
 `stack.go`
 
-Empty interfaces in a slightly more realistic example.
+* Empty interfaces in a slightly more realistic example.
 
 `second-stack.go`
 
-What happens when we put a duck on the stack? Type switches.
+* What happens when we put a duck on the stack? Type switches.
 
+### Resources
 
+* [Laughing dog](http://www.youtube.com/watch?v=g1QCbXCezNc) (video)
+* [Interfaces: A new leaf in an old book](http://video.fosdem.org/2014/K4601/Sunday/Interfaces_a_new_leaf_for_an_old_book.webm) (video)
+* [Built In Interfaces](http://jmoiron.net/blog/built-in-interfaces/)
+* [Effective Go](http://golang.org/doc/effective_go.html#interfaces)
+* [Go Data Structures: Interfaces](http://research.swtch.com/interfaces)
+* [Stunned by Go](http://how-bazaar.blogspot.co.nz/2013/07/stunned-by-go.html)
