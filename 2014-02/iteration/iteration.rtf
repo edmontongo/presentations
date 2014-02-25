@@ -1,0 +1,401 @@
+{\rtf1\ansi\deff0{\fonttbl{\f0\fmodern\fprq1\fcharset0;}}{\colortbl;\red128\green128\blue128;\red186\green33\blue33;\red0\green64\blue208;\red102\green102\blue102;\red64\green128\blue128;\red160\green160\blue0;\red25\green23\blue124;\red0\green128\blue0;\red187\green102\blue136;\red187\green102\blue34;\red136\green0\blue0;\red170\green34\blue255;\red153\green153\blue153;\red0\green160\blue0;\red160\green0\blue0;\red255\green0\blue0;\red128\green0\blue128;\red176\green0\blue64;\red0\green0\blue255;\red187\green187\blue187;\red188\green122\blue0;\red0\green0\blue128;\red125\green144\blue41;\red210\green65\blue58;}\f0{\cf8\b package} main\par
+\par
+{\cf8\b import} {\cf2 "fmt"}\par
+{\cf8\b import} {\cf2 "os"}\par
+{\cf8\b import} {\cf2 "bufio"}\par
+{\cf8\b import} {\cf2 "strings"}\par
+{\cf8\b import} {\cf2 "net/http"}\par
+\par
+{\cf8\b type} Tree {\cf8\b struct} \{\par
+    Value {\cf8 int}\par
+    Branches {\cf8\b map}[{\cf8 string}]Tree\par
+\}\par
+\par
+\par
+{\cf8\b func} TreeSum( tree Tree ) {\cf8 int}  \{\par
+	sum := tree.Value;\par
+	{\cf8\b for} _, val := {\cf8\b range} tree.Branches \{\par
+		sum += TreeSum(val)\par
+	\}\par
+	{\cf8\b return} sum;\par
+\}\par
+\par
+{\cf8\b type} iInt {\cf8 int}\par
+\par
+{\cf8\b func} (max iInt) Iter () <-{\cf8\b chan} iInt \{\par
+	ch := {\cf8 make}({\cf8\b chan} iInt);\par
+	{\cf8\b go} {\cf8\b func} () \{\par
+		m := {\cf8 int}(max)\par
+		{\cf8\b for} i := {\cf4 0}; i <= m; i++ \{\par
+			ch <- iInt(i)\par
+		\}\par
+		{\cf8 close}(ch)\par
+	\} ();\par
+	{\cf8\b return} ch\par
+\}\par
+\par
+{\cf8\b func} TreeWalker( tree Tree, f {\cf8\b func}(Tree) )  \{\par
+	f(tree)\par
+	{\cf8\b for} _, val := {\cf8\b range} tree.Branches \{\par
+		TreeWalker(val,f)\par
+	\}\par
+\}\par
+\par
+{\cf8\b func} TreeIter( tree Tree ) <-{\cf8\b chan} Tree \{\par
+	ch := {\cf8 make}({\cf8\b chan} Tree);\par
+	{\cf8\b go} {\cf8\b func} () \{\par
+		TreeWalker( tree, {\cf8\b func}(t Tree) \{\par
+			ch <- t\par
+		\})\par
+		{\cf8 close}(ch)\par
+	\} ();\par
+	{\cf8\b return} ch\par
+\}\par
+\par
+{\cf8\b func} (tree Tree) Iter() <-{\cf8\b chan} Tree \{\par
+	{\cf8\b return} TreeIter( tree )\par
+\}\par
+\par
+{\cf8\b type} StringIterator {\cf8\b struct} \{\par
+	current {\cf8 int}\par
+	s []rune\par
+\}\par
+\par
+{\cf8\b type} EvenStringIterator {\cf8\b struct} \{\par
+	current {\cf8 int}\par
+	s []rune\par
+\}\par
+\par
+\par
+{\cf5\i // http://ewencp.org/blog/golang-iterators/\par
+}{\cf8\b func} (si *StringIterator) Next() bool \{\par
+	si.current++\par
+	{\cf8\b return} (si.current < {\cf8 len}(si.s))\par
+\}\par
+\par
+{\cf8\b func} (si *StringIterator) Value() {\cf8 string} \{\par
+	{\cf8\b return} {\cf8 string}(si.s[si.current])\par
+\}\par
+\par
+\par
+{\cf8\b func} Iterator(s {\cf8 string}) *StringIterator \{\par
+	{\cf8\b return} &StringIterator\{current: -{\cf4 1}, s: []rune(s)\}\par
+\}\par
+\par
+\par
+{\cf8\b func} (si *EvenStringIterator) Next() bool \{\par
+	si.current += {\cf4 2};\par
+	{\cf8\b return} (si.current < {\cf8 len}(si.s))\par
+\}\par
+\par
+{\cf8\b func} (si *EvenStringIterator) Value() {\cf8 string} \{\par
+	{\cf8\b return} {\cf8 string}(si.s[si.current])\par
+\}\par
+\par
+\par
+{\cf8\b func} EvenIterator(s {\cf8 string}) *EvenStringIterator \{\par
+	{\cf8\b return} &EvenStringIterator\{current: -{\cf4 1}, s: []rune(s)\}\par
+\}\par
+\par
+\par
+{\cf8\b func} intIntMap( iarr []{\cf8 int}, cb ({\cf8\b func}({\cf8 int}) {\cf8 int})) []{\cf8 int} \{\par
+	out := {\cf8 make}( []{\cf8 int}, {\cf8 len}(iarr))\par
+	{\cf8\b for} i,v := {\cf8\b range} iarr \{\par
+		out[i] = cb( v )\par
+	\}\par
+	{\cf8\b return} out\par
+\}\par
+\par
+{\cf5\i // MACROS??? GENERICS???\par
+}{\cf8\b func} strStrMap( iarr []{\cf8 string}, cb ({\cf8\b func}({\cf8 string}) {\cf8 string})) []{\cf8 string} \{\par
+	out := {\cf8 make}( []{\cf8 string}, {\cf8 len}(iarr))\par
+	{\cf8\b for} i,v := {\cf8\b range} iarr \{\par
+		out[i] = cb( v )\par
+	\}\par
+	{\cf8\b return} out\par
+\}\par
+\par
+\par
+{\cf8\b func} series(start {\cf8 int}, end {\cf8 int}) []{\cf8 int} \{\par
+	length := end - start + {\cf4 1}\par
+	out := {\cf8 make}( []{\cf8 int}, length )\par
+	{\cf8\b for} i := {\cf4 0}; i < length; i++ \{\par
+		out[i] = start + i\par
+	\}\par
+	{\cf8\b return} out\par
+\}\par
+\par
+{\cf8\b func} parallelIntIntMap( l []{\cf8 int}, f ({\cf8\b func}({\cf8 int}) {\cf8 int}), workers {\cf8 int}) []{\cf8 int} \{\par
+	chans := {\cf8 make}( []({\cf8\b chan} []{\cf8 int}),  workers )\par
+	{\cf5\i //var chans [workers]chan []int\par
+}	{\cf8\b for} i := {\cf8\b range} chans \{\par
+		chans[i] = {\cf8 make}({\cf8\b chan} []{\cf8 int})\par
+	\}\par
+\par
+	unit := {\cf8 len}(l)/workers\par
+	{\cf8\b for} i := {\cf4 0} ; i< workers; i++ \{\par
+		mychan := chans[i]\par
+		start := i * unit\par
+		end := (i + {\cf4 1})*unit\par
+		{\cf8\b if} end >= {\cf8 len}(l) \{\par
+			end = {\cf8 len}(l) \par
+		\}\par
+		subl := l[start:end]\par
+		par := {\cf8\b func}(l []{\cf8 int}) \{\par
+			mychan <- intIntMap(l, f)\par
+			{\cf8 close}(mychan)\par
+		\}\par
+		{\cf8\b go} par(subl)\par
+	\}\par
+	out := {\cf8 make}([]{\cf8 int}, {\cf8 len}(l))\par
+	{\cf8\b for} i := {\cf4 0}; i < workers; i++ \{\par
+		arr := <- chans[i]\par
+		start := i*unit\par
+		end := start + {\cf8 len}(arr)\par
+		copy(out[start:end], arr)\par
+	\}\par
+	{\cf8\b return} out\par
+\}\par
+\par
+\par
+{\cf8\b func} parallelStrStrMap( l []{\cf8 string}, f ({\cf8\b func}({\cf8 string}) {\cf8 string}), workers {\cf8 int}) []{\cf8 string} \{\par
+	chans := {\cf8 make}( []({\cf8\b chan} []{\cf8 string}),  workers )\par
+	{\cf5\i //var chans [workers]chan []string\par
+}	{\cf8\b for} i := {\cf8\b range} chans \{\par
+		chans[i] = {\cf8 make}({\cf8\b chan} []{\cf8 string})\par
+	\}\par
+\par
+	unit := {\cf8 len}(l)/workers\par
+	{\cf8\b for} i := {\cf4 0} ; i< workers; i++ \{\par
+		mychan := chans[i]\par
+		start := i * unit\par
+		end := (i + {\cf4 1})*unit\par
+		{\cf8\b if} end >= {\cf8 len}(l) \{\par
+			end = {\cf8 len}(l) \par
+		\}\par
+		subl := l[start:end]\par
+		par := {\cf8\b func}(l []{\cf8 string}) \{\par
+			mychan <- strStrMap(l, f)\par
+			{\cf8 close}(mychan)\par
+		\}\par
+		{\cf8\b go} par(subl)\par
+	\}\par
+	out := {\cf8 make}([]{\cf8 string}, {\cf8 len}(l))\par
+	{\cf8\b for} i := {\cf4 0}; i < workers; i++ \{\par
+		arr := <- chans[i]\par
+		start := i*unit\par
+		end := start + {\cf8 len}(arr)\par
+		copy(out[start:end], arr)\par
+	\}\par
+	{\cf8\b return} out\par
+\}\par
+\par
+{\cf8\b func} intIntReduce( iarr []{\cf8 int}, cb ({\cf8\b func}({\cf8 int},{\cf8 int}) {\cf8 int})) {\cf8 int} \{\par
+	o := iarr[{\cf4 0}]\par
+	m := {\cf8 len}(iarr)\par
+	{\cf8\b for} i := {\cf4 1}; i < m; i++ \{\par
+		o = cb( iarr[i], o)\par
+	\}\par
+	{\cf8\b return} o\par
+\}\par
+\par
+\par
+{\cf8\b func} parallelIntIntMapReduce( l []{\cf8 int}, mapper ({\cf8\b func}({\cf8 int}) {\cf8 int}), reducer ({\cf8\b func}({\cf8 int},{\cf8 int}) {\cf8 int}),workers {\cf8 int}) {\cf8 int} \{\par
+	chans := {\cf8 make}( []({\cf8\b chan} {\cf8 int}),  workers )\par
+	{\cf5\i //var chans [workers]chan []int\par
+}	{\cf8\b for} i := {\cf8\b range} chans \{\par
+		chans[i] = {\cf8 make}({\cf8\b chan} {\cf8 int})\par
+	\}\par
+\par
+	unit := {\cf8 len}(l)/workers\par
+	{\cf8\b for} i := {\cf4 0} ; i< workers; i++ \{\par
+		mychan := chans[i]\par
+		start := i * unit\par
+		end := (i + {\cf4 1})*unit\par
+		{\cf8\b if} end >= {\cf8 len}(l) \{\par
+			end = {\cf8 len}(l) \par
+		\}\par
+		subl := l[start:end]\par
+		par := {\cf8\b func}(l []{\cf8 int}) \{\par
+			mychan <- intIntReduce(intIntMap(l, mapper), reducer)\par
+			{\cf8 close}(mychan)\par
+		\}\par
+		{\cf8\b go} par(subl)\par
+	\}\par
+\par
+	reductions := {\cf8 make}( []{\cf8 int}, workers)\par
+	{\cf8\b for} i := {\cf4 0}; i < workers; i++ \{\par
+		r := <- chans[i]\par
+		reductions[i] = r\par
+	\}\par
+	{\cf8\b return} intIntReduce(reductions, reducer)\par
+\}\par
+\par
+\par
+\par
+\par
+\par
+{\cf8\b func} main() \{\par
+	fmt.Printf({\cf2 "Hello, world.\\n"})\par
+	condition := false\par
+\par
+	{\cf8\b for} condition \{\par
+		{\cf5\i // ...\par
+}		condition = !condition\par
+	\}\par
+	reader := bufio.NewReader(os.Stdin)\par
+	reads := {\cf4 0}\par
+	{\cf8\b for} \{\par
+		reads++\par
+		_, err := reader.ReadString({\cf2 '\\n'});\par
+		{\cf8\b if} err!=nil \{\par
+			{\cf8\b break};\par
+		\}\par
+	\}\par
+	fmt.Printf({\cf2 "Reads: %d\\n"}, reads)\par
+\par
+	x := {\cf4 10}\par
+	{\cf8\b for} x > {\cf4 0} \{\par
+		x = x - {\cf4 1}\par
+	\}\par
+	{\cf5\i // x is 0\par
+}	fmt.Printf({\cf2 "x is %d\\n"}, x)\par
+	\par
+	{\cf5\i // maybe you're not sure how many\par
+}	{\cf5\i // iterations you need?\par
+}	y := {\cf4 100.0}\par
+	{\cf8\b for} y > {\cf4 1} \{\par
+		y = y / {\cf4 3};\par
+	\}\par
+	fmt.Printf({\cf2 "y is %f\\n"}, y)\par
+	{\cf5\i // y is 0.41152263374485604\par
+}\par
+	sum := {\cf4 0};\par
+	{\cf8\b for} i := {\cf4 0} ; i < {\cf4 10}; i++ \{\par
+		sum += i;\par
+	\}\par
+	fmt.Printf({\cf2 "Sum is %d\\n"}, sum)\par
+\par
+	s := {\cf2 ""}\par
+	s2 := {\cf2 "\ud{\u10084❤}\ud{\u9728☀}\ud{\u9734☆}\ud{\u9730☂}\ud{\u9787☻}\ud{\u9822♞}\ud{\u9775☯}\ud{\u9773☭}\ud{\u9762☢}"}\par
+	v := []{\cf8 string}\{{\cf2 "a"},{\cf2 "b"},{\cf2 "c"}\}\par
+	u := {\cf8\b map}[{\cf8 string}]{\cf8 string}\{{\cf2 "A"}:{\cf2 "a"}, {\cf2 "B"}:{\cf2 "b"},{\cf2 "C"}:{\cf2 "c"}\}\par
+	{\cf8\b for} i, val := {\cf8\b range} v \{\par
+		{\cf8\b for} j := {\cf4 0}; j <= i; j++ \{\par
+			s += val; \par
+		\}\par
+	\}\par
+	fmt.Printf({\cf2 "s is [%s]\\n"},s)\par
+	{\cf8\b for} key, val := {\cf8\b range} u \{\par
+		s += key;\par
+		s += val; {\cf5\i //  over keys\par
+}	\}\par
+	fmt.Printf({\cf2 "s is [%s]\\n"},s)\par
+	{\cf8\b for} i, val := {\cf8\b range} s2 \{\par
+		{\cf5\i // i is the byte location\par
+}		{\cf8\b for} j := {\cf4 0}; j <= i; j++ \{\par
+			s += {\cf8 string}(val);\par
+		\}\par
+	\}\par
+	fmt.Printf({\cf2 "s is (note that the unique was base-4) [%s]\\n"},s)\par
+\par
+	stump := {\cf8\b map}[{\cf8 string}]Tree\{\}	\par
+\par
+	tree := Tree\{{\cf4 0},\par
+		{\cf8\b map}[{\cf8 string}]Tree\{\par
+			{\cf2 "a"}:Tree\{{\cf4 1},stump\},\par
+			{\cf2 "b"}:Tree\{{\cf4 2}, {\cf8\b map}[{\cf8 string}]Tree\{\par
+					{\cf2 "h"}:Tree\{{\cf4 8},stump\},\par
+					{\cf2 "i"}:Tree\{{\cf4 9},stump\},\par
+					{\cf2 "j"}:Tree\{{\cf4 10},stump\},\par
+				\},\par
+			\},\par
+			{\cf2 "c"}:Tree\{{\cf4 3},stump\},\par
+			{\cf2 "d"}:Tree\{{\cf4 4}, {\cf8\b map}[{\cf8 string}]Tree\{\par
+					{\cf2 "e"}:Tree\{{\cf4 5},stump\},\par
+					{\cf2 "f"}:Tree\{{\cf4 6},stump\},\par
+					{\cf2 "g"}:Tree\{{\cf4 7},stump\},\par
+				\},\par
+			\},\par
+		\},\par
+	\}	\par
+\par
+	fmt.Printf({\cf2 "Treesum %d\\n"}, TreeSum( tree ))\par
+\par
+	{\cf8\b for} i := {\cf8\b range} iInt({\cf4 6}).Iter() \{\par
+		fmt.Printf({\cf2 "Wow! %v\\n"}, i)\par
+	\}\par
+\par
+	{\cf5\i // Call Back walker\par
+}	TreeWalker(tree, {\cf8\b func}(t Tree) \{ fmt.Printf({\cf2 "Node value %d\\n"},t.Value) \} )\par
+\par
+	{\cf8\b for} tree := {\cf8\b range} tree.Iter() \{\par
+		fmt.Printf({\cf2 "Now via Iter Node value %d\\n"},tree.Value)\par
+	\}\par
+\par
+	si := Iterator(s)\par
+	{\cf8\b for} si.Next() \{\par
+		fmt.Printf({\cf2 "String val! %s\\n"}, si.Value())\par
+	\}\par
+\par
+	si2 := EvenIterator(s)\par
+	{\cf8\b for} si2.Next() \{\par
+		fmt.Printf({\cf2 "Even String val! %s\\n"}, si2.Value())\par
+	\}\par
+\par
+\par
+	v2 := []{\cf8 int}\{{\cf4 1},{\cf4 2},{\cf4 3},{\cf4 4},{\cf4 5},{\cf4 6},{\cf4 7},{\cf4 8}\}\par
+	inc := {\cf8\b func}(x {\cf8 int}) {\cf8 int} \{ {\cf8\b return} {\cf4 1} + x \}\par
+	sqr := {\cf8\b func}(x {\cf8 int}) {\cf8 int} \{ {\cf8\b return} x * x \}\par
+	{\cf5\i // lack of generics\par
+}	v3 := intIntMap(v2, inc)\par
+	fmt.Printf({\cf2 "inc v2: [%v] v3: [%v]\\n"},v2,v3)\par
+	{\cf5\i // lack of generics\par
+}	v3 = intIntMap(v2, sqr)\par
+	fmt.Printf({\cf2 "sqr v2: [%v] v3: [%v]\\n"},v2,v3)\par
+	\par
+\par
+	basename := {\cf8\b func}(path {\cf8 string}) {\cf8 string} \{\par
+		sp := strings.Split(path,{\cf2 "/"})\par
+		{\cf8\b return}(sp[{\cf8 len}(sp) - {\cf4 1}])\par
+	\}\par
+	vs := []{\cf8 string}\{{\cf2 "/home"},{\cf2 "/file"}, {\cf2 "/usr/local"}\}\par
+	vs2 := strStrMap( vs, basename )\par
+	fmt.Printf({\cf2 "basename vs: [%v] vs2: [%v]\\n"},vs,vs2)\par
+\par
+	urls := []{\cf8 string}\{{\cf2 "http://cbc.ca"}, {\cf2 "http://gc.ca"}, {\cf2 "http://alberta.ca"}\}	\par
+	status := {\cf8\b func}( uri {\cf8 string} ) {\cf8 string} \{\par
+		resp, _ := http.Get(uri)		\par
+		{\cf8\b return}(resp.Status)\par
+	\}\par
+\par
+	statuses := strStrMap(urls, status);\par
+	fmt.Printf({\cf2 "statuses: %v\\n"}, statuses)\par
+	\par
+	mySum := {\cf8\b func}(l []{\cf8 int}) {\cf8 int} \{\par
+		sum := {\cf4 0}\par
+		{\cf8\b for} _,v := {\cf8\b range} l \{\par
+			sum += v\par
+		\}\par
+		{\cf8\b return}(sum)\par
+	\}\par
+	\par
+	sumres := mySum( intIntMap(series({\cf4 1},{\cf4 1000}),sqr))\par
+	fmt.Printf({\cf2 "sumres: %v\\n"}, sumres)\par
+	psumres := mySum(parallelIntIntMap( series({\cf4 1},{\cf4 1000}), sqr, {\cf4 4}))\par
+	fmt.Printf({\cf2 "psumres: %v\\n"}, psumres)\par
+	\par
+	pgets := parallelStrStrMap( urls, status, {\cf4 3})\par
+	fmt.Printf({\cf2 "Stupid examples with URLs %v\\n"}, pgets)\par
+\par
+	vex := []{\cf8 int}\{{\cf4 1},{\cf4 2},{\cf4 3},{\cf4 4},{\cf4 5},{\cf4 6},{\cf4 7},{\cf4 8},{\cf4 9}\};\par
+	iadd := {\cf8\b func}(x, y {\cf8 int}) {\cf8 int} \{ {\cf8\b return}(x + y) \}\par
+	vexr := intIntReduce(vex, iadd)\par
+	fmt.Printf({\cf2 "Sum: %v\\n"}, vexr)\par
+\par
+	preduced := parallelIntIntMapReduce( series({\cf4 1},{\cf4 100000000}), sqr, iadd, {\cf4 4})\par
+	fmt.Printf({\cf2 "Reduced %v\\n"}, preduced)\par
+	\par
+	\par
+\}\par
+}

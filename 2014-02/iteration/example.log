@@ -1,0 +1,241 @@
+echo -e '\n\n\n' | go run src/softwareprocess.es/abramhindle/iteration/iteration.go
+Hello, world.
+Reads: 5
+x is 0
+y is 0.411523
+Sum is 45
+s is [abbccc]
+s is [abbcccAaBbCc]
+s is (note that the unique was base-4) [abbcccAaBbCc❤☀☀☀☀☆☆☆☆☆☆☆☂☂☂☂☂☂☂☂☂☂☻☻☻☻☻☻☻☻☻☻☻☻☻♞♞♞♞♞♞♞♞♞♞♞♞♞♞♞♞☯☯☯☯☯☯☯☯☯☯☯☯☯☯☯☯☯☯☯☭☭☭☭☭☭☭☭☭☭☭☭☭☭☭☭☭☭☭☭☭☭☢☢☢☢☢☢☢☢☢☢☢☢☢☢☢☢☢☢☢☢☢☢☢☢☢]
+Treesum 55
+Wow! 0
+Wow! 1
+Wow! 2
+Wow! 3
+Wow! 4
+Wow! 5
+Wow! 6
+Node value 0
+Node value 1
+Node value 2
+Node value 8
+Node value 9
+Node value 10
+Node value 3
+Node value 4
+Node value 5
+Node value 6
+Node value 7
+Now via Iter Node value 0
+Now via Iter Node value 1
+Now via Iter Node value 2
+Now via Iter Node value 8
+Now via Iter Node value 9
+Now via Iter Node value 10
+Now via Iter Node value 3
+Now via Iter Node value 4
+Now via Iter Node value 5
+Now via Iter Node value 6
+Now via Iter Node value 7
+String val! a
+String val! b
+String val! b
+String val! c
+String val! c
+String val! c
+String val! A
+String val! a
+String val! B
+String val! b
+String val! C
+String val! c
+String val! ❤
+String val! ☀
+String val! ☀
+String val! ☀
+String val! ☀
+String val! ☆
+String val! ☆
+String val! ☆
+String val! ☆
+String val! ☆
+String val! ☆
+String val! ☆
+String val! ☂
+String val! ☂
+String val! ☂
+String val! ☂
+String val! ☂
+String val! ☂
+String val! ☂
+String val! ☂
+String val! ☂
+String val! ☂
+String val! ☻
+String val! ☻
+String val! ☻
+String val! ☻
+String val! ☻
+String val! ☻
+String val! ☻
+String val! ☻
+String val! ☻
+String val! ☻
+String val! ☻
+String val! ☻
+String val! ☻
+String val! ♞
+String val! ♞
+String val! ♞
+String val! ♞
+String val! ♞
+String val! ♞
+String val! ♞
+String val! ♞
+String val! ♞
+String val! ♞
+String val! ♞
+String val! ♞
+String val! ♞
+String val! ♞
+String val! ♞
+String val! ♞
+String val! ☯
+String val! ☯
+String val! ☯
+String val! ☯
+String val! ☯
+String val! ☯
+String val! ☯
+String val! ☯
+String val! ☯
+String val! ☯
+String val! ☯
+String val! ☯
+String val! ☯
+String val! ☯
+String val! ☯
+String val! ☯
+String val! ☯
+String val! ☯
+String val! ☯
+String val! ☭
+String val! ☭
+String val! ☭
+String val! ☭
+String val! ☭
+String val! ☭
+String val! ☭
+String val! ☭
+String val! ☭
+String val! ☭
+String val! ☭
+String val! ☭
+String val! ☭
+String val! ☭
+String val! ☭
+String val! ☭
+String val! ☭
+String val! ☭
+String val! ☭
+String val! ☭
+String val! ☭
+String val! ☭
+String val! ☢
+String val! ☢
+String val! ☢
+String val! ☢
+String val! ☢
+String val! ☢
+String val! ☢
+String val! ☢
+String val! ☢
+String val! ☢
+String val! ☢
+String val! ☢
+String val! ☢
+String val! ☢
+String val! ☢
+String val! ☢
+String val! ☢
+String val! ☢
+String val! ☢
+String val! ☢
+String val! ☢
+String val! ☢
+String val! ☢
+String val! ☢
+String val! ☢
+Even String val! b
+Even String val! c
+Even String val! c
+Even String val! a
+Even String val! b
+Even String val! c
+Even String val! ☀
+Even String val! ☀
+Even String val! ☆
+Even String val! ☆
+Even String val! ☆
+Even String val! ☆
+Even String val! ☂
+Even String val! ☂
+Even String val! ☂
+Even String val! ☂
+Even String val! ☂
+Even String val! ☻
+Even String val! ☻
+Even String val! ☻
+Even String val! ☻
+Even String val! ☻
+Even String val! ☻
+Even String val! ♞
+Even String val! ♞
+Even String val! ♞
+Even String val! ♞
+Even String val! ♞
+Even String val! ♞
+Even String val! ♞
+Even String val! ♞
+Even String val! ☯
+Even String val! ☯
+Even String val! ☯
+Even String val! ☯
+Even String val! ☯
+Even String val! ☯
+Even String val! ☯
+Even String val! ☯
+Even String val! ☯
+Even String val! ☯
+Even String val! ☭
+Even String val! ☭
+Even String val! ☭
+Even String val! ☭
+Even String val! ☭
+Even String val! ☭
+Even String val! ☭
+Even String val! ☭
+Even String val! ☭
+Even String val! ☭
+Even String val! ☭
+Even String val! ☢
+Even String val! ☢
+Even String val! ☢
+Even String val! ☢
+Even String val! ☢
+Even String val! ☢
+Even String val! ☢
+Even String val! ☢
+Even String val! ☢
+Even String val! ☢
+Even String val! ☢
+Even String val! ☢
+inc v2: [[1 2 3 4 5 6 7 8]] v3: [[2 3 4 5 6 7 8 9]]
+sqr v2: [[1 2 3 4 5 6 7 8]] v3: [[1 4 9 16 25 36 49 64]]
+basename vs: [[/home /file /usr/local]] vs2: [[home file local]]
+statuses: [200 OK 200 OK 200 OK]
+sumres: 333833500
+psumres: 333833500
+Stupid examples with URLs [200 OK 200 OK 200 OK]
+Sum: 45
+Reduced 672921401752298880

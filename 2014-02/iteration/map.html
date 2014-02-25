@@ -1,0 +1,46 @@
+<html>
+<head>
+</head>
+<body>
+<script src="parallel.js"></script>
+<script>
+	
+
+function sum(l) {
+    var sum = 0.0;
+    for (var i in l) {
+	sum += l[i];
+    }
+    return sum;
+}
+function range(start,end) {
+    var out = [];
+    var j = 0;
+    for (var i = start; i < end; i++) {
+        out[j++] = i;
+    }
+    return out;
+}
+function sqr(v) { return v * v; }
+alert(sum(range(1,100).map(sqr)));
+var p = new Parallel(range(1,100));//this could mean 100 workers!
+p.map(sqr).then(function(d) { alert("what"+sum(d)); });
+var p = new Parallel([range(1,10000),range(10001,20000),range(20001,30000)]);
+p.map(sum).reduce(sum).then(alert);
+
+function GET(url) {
+    var request = new XMLHttpRequest();
+    request.open("GET", url, false);
+    request.send(null);
+    return request.responseText;
+}
+//var urls = ["http://cbc.ca","http://gc.ca","http://alberta.ca"];
+var urls = ["map.html","map.html","map.html"];
+alert(urls.map(GET));
+// You need proper URLs
+var urls = ["file:///./map.html","file:///./map.html","file:///./map.html"];
+new Parallel(urls).map(GET).then(alert);
+
+</script>
+</body>
+</html>

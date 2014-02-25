@@ -1,0 +1,18 @@
+A talk about Go and iteration. Furthermore it motivates the need for watching your dependencies in your loop bodies in order to exploit map/reduce-like paradigms.
+
+
+=== Python ===
+
+https://github.com/abramhindle/python-iteration-talk
+
+=== Javascript ===
+
+https://github.com/abramhindle/python-iteration-talk/tree/javascript
+
+=== Perl ===
+
+Perl versions of the talk:
+
+Video version is available at: http://youtu.be/qKXNTn3RkP8
+
+And: http://softwareprocess.es/b/abram-hindle-perl-iteration-talk.mkv
