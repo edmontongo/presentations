@@ -1,6 +1,6 @@
 A talk about Go and iteration. Furthermore it motivates the need for watching your dependencies in your loop bodies in order to exploit map/reduce-like paradigms.
 
-Video of the talk: http://youtu.be/me4kioYIRl8
+Video of the talk: http://youtu.be/DHDr6V-9ns8
 
 === Python ===
 
