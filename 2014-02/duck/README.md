@@ -18,11 +18,13 @@
 `third.go`
 
 * ClayPigeon does not implement Speaker.
+* Structural typing.
 * Worth noting: interfaces apply across package boundaries.
 
 `fourth.go`
 
-* Rather silly example. Type assertions (at runtime).
+* Rather silly example. 
+* Type assertions (at runtime).
 
 `fifth.go`
 
@@ -39,9 +41,10 @@
 ### Resources
 
 * [Laughing dog](http://www.youtube.com/watch?v=g1QCbXCezNc) (video)
-* [Interfaces: A new leaf in an old book](http://video.fosdem.org/2014/K4601/Sunday/Interfaces_a_new_leaf_for_an_old_book.webm) (video)
+* [Interfaces: A new leaf in an old book](http://words.volant.is/articles/interfaces/)
 * [Built In Interfaces](http://jmoiron.net/blog/built-in-interfaces/)
 * [Effective Go](http://golang.org/doc/effective_go.html#interfaces)
 * [Go Data Structures: Interfaces](http://research.swtch.com/interfaces)
 * [Stunned by Go](http://how-bazaar.blogspot.co.nz/2013/07/stunned-by-go.html)
 * [Top Ten Reasons Cocoa is Great Because of Objective-C](http://www.informit.com/articles/article.aspx?p=1353396) (#5 is duck typing)
+* [Writer interface on Sourcegraph](https://sourcegraph.com/code.google.com/p/go/symbols/go/code.google.com/p/go/src/pkg/io/Writer:type/$network/implementations)
