@@ -24,9 +24,9 @@ func (e *Employee) Name() string {
 }
 
 func main() {
-	daniel := Employee{
+	employee := Employee{
 		Person{FirstName: "Daniel", LastName: "Huckstep"},
 		Department{Name: "IT"},
 	}
-	fmt.Println(daniel.Name())
+	fmt.Println(employee.Name())
 }

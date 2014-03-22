@@ -15,8 +15,8 @@ type Employee struct {
 }
 
 func main() {
-	daniel := Employee{
+	employee := Employee{
 		Person{FirstName: "Daniel", LastName: "Huckstep"},
 	}
-	fmt.Println(daniel.person.Name())
+	fmt.Println(employee.person.Name())
 }
