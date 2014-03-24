@@ -9,7 +9,6 @@ import (
 
 type PhoneNumber uint64
 
-// Returns phone number formatted as xxx-xxx-xxxx
 func (ph PhoneNumber) String() string {
 	area := ph / 10000000
 	local := (ph % 10000000) / 10000

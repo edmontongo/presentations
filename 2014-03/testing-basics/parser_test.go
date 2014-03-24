@@ -1,6 +1,7 @@
 package phoneparser
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -29,6 +30,8 @@ func TestSimpleNumber(t *testing.T) {
 	assert.Equal(t, number, PhoneNumber(7801234567), "Expected parsed number to equal 7801234567")
 }
 
-func TestPhoneNumberToString(t *testing.T) {
-	assert.Equal(t, "(780)123-4567", PhoneNumber(7801234567).String())
+func ExamplePhoneNumber_String() {
+	fmt.Println("Phone number:", PhoneNumber(7801234567))
+	// Output:
+	// Phone number: (780)123-4567
 }
