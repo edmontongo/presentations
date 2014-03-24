@@ -12,6 +12,8 @@ var testsThatReturnErrors = []struct {
 }{
 	{"", "parsing empty string"},
 	{"78012345678", "number should be too long"},
+	{"10000000000", "upper threshold"},
+	{"780123456", "number should be too short"},
 }
 
 func TestStringsThatReturnErrors(t *testing.T) {
