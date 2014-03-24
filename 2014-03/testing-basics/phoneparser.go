@@ -14,7 +14,7 @@ func (ph PhoneNumber) String() string {
 	area := ph / 10000000
 	local := (ph % 10000000) / 10000
 	digits := ph % 10000
-	return fmt.Sprintf("%03d-%03d-%04d", area, local, digits)
+	return fmt.Sprintf("(%03d)%03d-%04d", area, local, digits)
 }
 
 // Parses string for a valid phone number

@@ -30,5 +30,5 @@ func TestSimpleNumber(t *testing.T) {
 }
 
 func TestPhoneNumberToString(t *testing.T) {
-	assert.Equal(t, "780-123-4567", PhoneNumber(7801234567).String())
+	assert.Equal(t, "(780)123-4567", PhoneNumber(7801234567).String())
 }
