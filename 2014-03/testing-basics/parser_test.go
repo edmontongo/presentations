@@ -28,3 +28,7 @@ func TestSimpleNumber(t *testing.T) {
 	assert.NoError(t, err, "Parsing simple number")
 	assert.Equal(t, number, PhoneNumber(7801234567), "Expected parsed number to equal 7801234567")
 }
+
+func TestPhoneNumberToString(t *testing.T) {
+	assert.Equal(t, "780-123-4567", PhoneNumber(7801234567).String())
+}
