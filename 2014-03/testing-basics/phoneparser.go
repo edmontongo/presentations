@@ -26,6 +26,9 @@ func ParseString(s string) (PhoneNumber, error) {
 	if number < 1000000000 {
 		return 0, errors.New("number is too short")
 	}
+	if number == 7807654321 {
+		return 0, errors.New("arbitrarily invalid number")
+	}
 
 	return PhoneNumber(number), err
 }
