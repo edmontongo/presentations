@@ -16,3 +16,8 @@ func TestSimpleNumber(t *testing.T) {
 	assert.NoError(t, err, "Parsing simple number")
 	assert.Equal(t, number, PhoneNumber(7801234567), "Expected parsed number to equal 7801234567")
 }
+
+func TestLongNumberReturnsError(t *testing.T) {
+	_, err := ParseString("78012345678")
+	assert.Error(t, err, "number should be too long")
+}
