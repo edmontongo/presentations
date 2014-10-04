@@ -1,0 +1,11 @@
+{{template "head" .Header}}
+{{template "navigation.html" .Navigation}}
+<div>
+{{range .Content}}
+	{{if .Image}}{{template "imagepost" .}}
+	{{else if .Story}}{{template "storypost" .}}
+	{{else}}{{template "emptypost"}}
+	{{end}}
+{{end}}
+</div>
+{{template "footer.html" .Footer}}
