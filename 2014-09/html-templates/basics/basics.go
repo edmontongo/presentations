@@ -52,7 +52,7 @@ func cursorStruct() {
 		String string
 	}{9, 3.14159, "Purple"}
 
-	fmt.Prinln("Here we refer to members of '.'.")
+	fmt.Println("Here we refer to members of '.'.")
 	execute("{{.Int}} bears ate {{.Float}} {{.String}} coconuts", data)
 }
 
