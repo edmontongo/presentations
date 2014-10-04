@@ -10,7 +10,7 @@ import (
 
 func main() {
 	// Basics
-	fmt.Printf("Press any key to start")
+	fmt.Printf("Press any enter key to start")
 	wait()
 	cursorSimple()
 	cursorStruct()
