@@ -1,0 +1,3 @@
+export GOROOT=/opt/programming/go
+echo $PATH | grep -q $GOROOT || export PATH=${PATH}:${GOROOT}/bin
+export GOPATH=$(dirname $(readlink -f $BASH_SOURCE))
