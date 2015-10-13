@@ -1,0 +1,194 @@
+Building Go Tooling
+How Tools Are Built And You Can Too
+28 Sep 2015
+Tags: edmonton-go, golang, tooling
+
+Matthias Stone
+CTO, Bellstone Software Engineering
+matthias@bellstone.ca
+@MatthiasStone
++MatthiasStone
+
+
+
+* Introduction
+
+* Appeal to Authority
+
+_"Go's_syntax,_package_system,_naming_conventions,_and_other_features_were_designed_to_make_tools_easy_to_write,_and_the_library_includes_a_lexer,_parser,_and_type_checker_for_the_language."_
+
+.caption Rob Pike, 2012
+
+* What Is A Tool In This Context?
+
+Here we are referring to tools as programs that accept source code as input and produce some form of output. This includes common things like:
+
+- Source code formatters
+- Syntax highlighters
+- Static analyzers
+
+* Why Learn How Tools Are Made?
+
+- Understanding how these tools work can lead to insights into what new kinds of tools can be created.
+- Creating such tools in Go is easy.
+- Writing new tools can improve your productivity.
+
+
+* Compiler Theory
+
+Simplistically, compilers can be though of as having two phases:
+
+# TODO: Steal smarter words from compilers textbook
+- Analysis - Interprets the input source program.
+- Synthesis - Creates an output program in the desired language (ASM/C/bytecode)
+
+Most Go tooling is built on the analysis phase. Packages for analysis of Go source are provided in the standard library.
+
+.link http://golang.org/pkg/go go Package Docs
+
+* Analysis
+
+Can be considered to consist of three phases:
+
+- Lexical Analysis
+- Syntactical Analysis
+- Semantic Analysis
+
+The first two are all we need to know about to right some neat tools.
+
+* Lexing/Scanning
+
+* Lexing & Scanning
+
+A lexical analyzer reads the source characters of a program and groups them into meaningful sequences called `lexemes`. These are output as a set of `tokens`, which are a simple `token-name`:`attribute-value` pair.
+
+The `go/token` package defines the token-names. This package provides additional utilities for conveying token position.
+
+`go/scanner` provides utilities for reading a source program into name/value pairs.
+
+* Scanner Example
+
+This trivial example scans a string and outputs its tokens with their offsets.
+
+.play tooling/lex.go /stringAsFile/,/}/
+
+* Syntax Analysis/Parsing
+
+* Parsing
+
+- After the scanner has turned the source into a stream of tokens, parsing will transform that into a tree representative of the program.
+
+.image tooling/code-lex-parse.png 350 _
+.caption Compilers: Principles, Techniques, and Tools
+
+* Parser Example
+
+.play tooling/syntax.go /BEGIN OMIT/,/END OMIT/
+
+- `file.Decl` is a slice of the top level declarations in the file.
+- `ast.FuncDecl` is one of many AST node types.
+
+* ast.Walk() Example(1/3)
+
+.code tooling/complex.go  /BEGIN OMIT/,/END OMIT/
+
+* ast.Walk() Example(2/3)
+
+.code tooling/complex.go  /type basicVisitor/,/ENDBASIC OMIT/
+
+* ast.Walk() Example(3/3)
+
+.play tooling/complex.go  /type funcVisitor/,/ENDFUNC OMIT/
+
+
+* Existing Tools
+
+
+* go-fmt
+
+Go format is perhaps the most well known tool that operates on Go source. It takes this:
+
+.code tooling/format-sample.txt /a==/,//
+
+And produces
+
+.code tooling/format-sample.txt /if a/,/^}/
+
+This becomes quite addicting to have on file save.
+
+.caption This tool rewrites everyone's code, and for some reason remains unquestioned (See Trusting Trust)
+
+
+* go-imports
+
+`go-imports` does everything `go-fmt` does, _and_ automatically cleans up imports as the code changes.
+
+This is even more addicting to have on file save.
+
+
+* go-rename
+
+.link https://godoc.org/golang.org/x/tools/cmd/gorename
+
+The gorename command performs precise type-safe renaming of identifiers in Go source code.
+
+- Semantically sensitive.
+- When changing an exported identifier it will also update all files in `$GOPATH` that reference it.
+
+* go-list
+
+.code tooling/go-list.sh
+
+Produces
+
+.image tooling/time-deps.svg 350 _
+
+.caption From "Stupid Gopher Tricks" by Andrew Gerrand
+
+
+* go-fuzz
+
+A coverage-guided fuzzing solution for testing of Go packages. Fuzzing is mainly applicable to packages that parse complex inputs (both text and binary), and is especially useful for hardening of systems that parse inputs from potentially malicious users (e.g. anything accepted over a network).
+
+- Tries to crash your program by feeding it random input.
+- Intelligently follows code execution to monitor if it is getting closer to a `panic()`.
+
+.link https://github.com/dvyukov/go-fuzz
+
+* errcheck
+
+- Looks for unchecked errors in Go programs.
+- Can be conveniently connected to git hooks on an upstream repository or locally.
+
+Example:
+
+  > errcheck -ignore ':Write' github.com/matthias-stone/go-numato
+  github.com/matthias-stone/go-numato/numato.go:74:10     n.action(p, read)
+  github.com/matthias-stone/go-numato/simulator.go:77:10  sim.Set(p, s)
+  github.com/matthias-stone/go-numato/simulator.go:101:9  sim.Set(p, Off)
+  github.com/matthias-stone/go-numato/simulator.go:106:9  sim.Set(p, On)
+  github.com/matthias-stone/go-numato/simulator_test.go:29:9      sim.Set(p, On)
+
+.link https://github.com/kisielk/errcheck
+
+
+* Ideas?
+
+* Other Tools
+
+- godoc
+- oracle
+- deprehend
+- unexport (go-challenge 5)
+- Bellstone custom project
+- go-stringer
+
+
+* Resources
+
+.link https://www.youtube.com/watch?v=HxaD_trXwRE Lexical Scanning in Go
+.link http://blog.gopheracademy.com/advent-2014/parsers-lexers/ Handwritten Parsers & Lexers in Go
+.link http://blog.gopheracademy.com/code-generation-from-the-ast/ Code Generation From the AST
+.link http://www.amazon.ca/Compilers-Principles-Techniques-Tools-Edition/dp/0321486811 Compilers: Principles, Techniques, and Tools (2nd Edition)
+.link https://talks.golang.org/2015/tricks.slide#51 Stupid Gopher Tricks
+.link http://www.jerf.org/iri/post/2931 Interface Scope Limiter
