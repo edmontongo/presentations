@@ -1,0 +1,217 @@
+Introduction to Reflection
+Edmonton Go Meetup
+
+24 August 2015
+
+Nicholas Boers
+Assistant Professor, MacEwan University
+boersn@macewan.ca
+http://academic.macewan.ca/boersn/
+
+* Outline
+
+- *Introduction*
+- Review of types
+- Reflection
+- Examples
+
+* Introduction
+
+Here's the story behind my foray into reflection...
+
+.image blank.jpg 30 30
+
+I wanted my application to use text-based configuration files, e.g.,
+
+.code sample.gcfg
+
+* Introduction: Packages
+
+I found packages that could load such configuration files, e.g., [[gopkg.in/gcfg.v1]].
+
+.play -edit sample.go /BEGIN/,/END/
+
+* Introduction: Default configuration
+
+I found that creating a default configuration would require some changes.
+
+.play -edit sample2.go /BEGIN/,/END/
+
+* Introduction: Concerns
+
+There were two things that I didn't like:
+
+- creating the `General` and `Daemon` structs
+- setting the default values outside the structs
+
+.code sample2.go /BEGIN/,/E2/
+
+* Introduction: Response
+
+I was familiar with _using_ struct tags with `encoding/json`, e.g.,
+
+  type Packet struct {
+      Type           string          `json:"type"`
+      SequenceNumber int             `json:"seqno"`
+      Arguments      json.RawMessage `json:"args"`
+  }
+
+.image blank.jpg 30 30
+
+I wondered whether I could define default values in struct tags...
+
+* Introduction: Goal
+
+Ultimately, I wanted to be able to write...
+
+.code sample3.go /BEGIN/,/END/
+
+At the end of this talk, I'll present the `setDefaults` function.
+*It*will*use*reflection.*
+
+(Reflection in computing is the ability of a program to examine its own structure, particularly through types.)
+
+* Outline
+
+- Introduction
+- *Review*of*types*
+- Reflection
+- Examples
+
+* Review of types
+
+Some points on types:
+
+- Variables have types
+# false for Booleans, 0 for integers, 0.0 for floats, "" for strings, and nil for pointers, functions, interfaces, slices, channels, and maps
+- Types are static
+# once variable declared, type cannot change
+# types are known (and fixed!) at compile time
+
+Are any of the following types the same?
+
+- `int`
+- `int32`
+- `int64`
+- `[]int`
+- `*int`
+
+What about `interface` types...
+
+* Interfaces: Introduction
+
+Non-interface _types_ specify the _data_ that can be stored.
+
+- non-interface _variables_ hold values of that type
+
+ type Temperature float64
+ var t Temperature = 26.5
+
+.image blank.jpg 30 30
+
+Interface _types_ specify the _method_set_ (behaviour) of values that can be stored.
+
+- interface _variables_ hold values supporting those methods
+
+* Interfaces: Examples
+
+Declarations from `io`:
+
+ // Reader is the interface that wraps the basic Read method.
+ type Reader interface {
+     Read(p []byte) (n int, err error)
+ } 
+ 
+ // Writer is the interface that wraps the basic Write method.
+ type Writer interface {
+     Write(p []byte) (n int, err error)
+ }
+
+Assignments into `io.Writer`:
+
+ var w io.Writer
+ w = os.Stdout
+ w = bufio.NewWriter(w)
+ w = new(bytes.Buffer)
+ // and so on
+# RHS: any value whose type has a Write method
+
+Source: [[http://blog.golang.org/laws-of-reflection]]
+
+* Interfaces: Empty interface
+
+Consider the following code:
+
+.play -edit empty.go /BEGIN/,/END/
+
+Observations:
+
+- empty set of methods (satisfied by all types)
+- can store any concrete (non-interface) value into `x`
+
+* Interfaces: Type switches
+
+A switch can allow your code to inspect and respond to an interface variable's type at runtime.
+
+.play -edit typeswitch.go /BEGIN/,/END/
+
+* Interfaces: How do they work?
+
+An interface variable essentially stores a pair: (a) value's type descriptor and (b) value.
+
+.code works.go /BEGIN/,/END/
+
+* Interfaces: How do they work?
+
+An interface variable essentially stores a pair: (a) value's type descriptor and (b) value.
+
+.code works.go /BEGIN/,/END/
+
+.image iface.png
+.caption Interface variable w contains information on both the type and value.
+
+* Outline
+
+- Introduction
+- Review of types
+- *Reflection*
+- Examples
+
+* Reflection
+
+ Reflection in computing is the ability of a program to examine its own structure, particularly
+ through types; it's a form of metaprogramming. It's also a great source of confusion.
+
+ ...
+
+ At the basic level, reflection is just a mechanism to examine the type and value pair stored
+ inside an interface variable.
+
+Source: [[http://blog.golang.org/laws-of-reflection]]
+
+* Reflect: Example (1/2)
+
+.play -edit interface.go
+
+* Reflect: Example (2/2)
+
+.play -edit interface2.go
+
+* Reflect: Package
+
+.iframe http://golang.org/pkg/reflect/ 600 1000
+
+* Outline
+
+- Introduction
+- Review of types
+- Reflection
+- *Examples*
+
+* Examples: isZero
+
+Let's look at a function named `isZero` that accepts (almost?) any variable and returns a Boolean value that indicates whether that variable contains the zero value for the type.
+
+* Examples: setDefaults
+
+Let's look at a function named `setDefaults` that accepts a pointer to a struct and (recursively) initializes its fields to the value of the `default` tag.

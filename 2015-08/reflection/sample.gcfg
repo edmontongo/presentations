@@ -1,0 +1,6 @@
+[general]
+# site=1234
+
+[daemon]
+address=127.0.0.1
+# port=5678
