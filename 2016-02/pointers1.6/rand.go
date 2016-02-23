@@ -1,8 +1,6 @@
 package main
 
-/*
-#include <stdlib.h>
-*/
+// #include <stdlib.h>
 import "C"
 import "fmt"
 

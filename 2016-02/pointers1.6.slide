@@ -1,4 +1,4 @@
-Pointer Semantics
+Cgo Pointer Semantics
 Changes in Go 1.6
 26 Oct 2015
 Tags: edmonton-go, golang, go1.6
@@ -9,9 +9,6 @@ matthias@bellstone.ca
 @MatthiasStone
 +MatthiasStone
 
-
-
-
 * What is cgo?
 
 - cgo lets Go packages call C code
@@ -20,26 +17,58 @@ matthias@bellstone.ca
 * Example
 
 .code pointers1.6/rand.go
-.caption Cgo does not work in the playground!
 .caption Cgo is very dangerous!
 
 * What is a Pointer
-
 # Ask if we can skip this.
+
+.code pointers1.6/pointer.go /{/,/}/
+A pointer is a variable that "points" to a different variable. Here b points to a.
+
+* Visual Aid
 
 .image pointers1.6/Pointers.svg.png
 .caption en.wikipedia.org/wiki/Pointer_(computer_programming)
 
-* Pointer in C
+* Pointers in Cgo
 
 * Dangers
 
+- Memory can be allocated or freed by Go
+- Memory can be allocated or freed by C
+- Copying pointers between these is dangerous
+
 * New semantics
 
-The major change is the definition of rules for sharing Go pointers with C code, to ensure that such C code can coexist with Go's garbage collector. Briefly, Go and C may share memory allocated by Go when a pointer to that memory is passed to C as part of a cgo call, provided that the memory itself contains no pointers to Go-allocated memory, and provided that C does not retain the pointer after the call returns. These rules are checked by the runtime during program execution: if the runtime detects a violation, it prints a diagnosis and crashes the program. The checks can be disabled by setting the environment variable GODEBUG=cgocheck=0, but note that the vast majority of code identified by the checks is subtly incompatible with garbage collection in one way or another. Disabling the checks will typically only lead to more mysterious failure modes. Fixing the code in question should be strongly preferred over turning off the checks. See the cgo documentation for more details.
+* What Can Be Shared
+# The major change is the definition of rules for sharing Go pointers with C code, to ensure that such C code can coexist with Go's garbage collector.
+
+From Go to C
+
+- The pointed-to object contains no pointers to Go-allocated memory
+- C does not retain the pointer after the call returns
+
+From C to Go
+
+- C can return pointers it manages to Go
+- Go will not free those structures, C must
+
+* Runtime Checks
+- If the runtime detects a violation, it prints a diagnosis and crashes the program
+
+But it can be disabled...
+
+- The checks can be disabled by setting the environment variable GODEBUG=cgocheck=0
+- Note that the vast majority of code identified by the checks is subtly incompatible with garbage collection in one way or another.
+- Disabling the checks will typically only lead to more mysterious failure modes.
+
+* Example
+
+.code pointers1.6/void.go /include/,/^}/
 
 * Questions?
 
 # C.complexfloat, C.complexdouble != complex64, complex128
 
 * Bellstone Engineering is Hiring!
+
