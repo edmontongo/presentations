@@ -1,0 +1,169 @@
+Shopping is Hard, Let's Build a Web App
+
+Chris Olsen
+olsen.chris@gmail.com
+
+* Introduction
+	
+My experience with Go
+
+- I am a web developer, so I tend to focus on building web apps/services with Go
+- Off an on for last couple of years
+- Still learning
+
+* Why Use Go?
+
+RubyOnRails can get an app up and deployed in minutes...
+
+- Go is fast. Ruby doesn't even come close to comparing.
+- Being able to compile your code is a good thing!
+- Having your code packaged up into a single executable file is nice.
+- Go isn't reliant on nginx or any other HTTP server.
+
+* But...
+
+- There isn't a defacto standard framework or library to create a web app or service.
+- Deciding on what tools to use will take a little time.
+
+This goal of this talk is to let you know what I found works well to create an API.
+
+* Components 
+
+- Route handling
+
+	// Handle GET/POST/PUT/... and extract querystring params
+	http.HandleFunc("/foo", handleRequest) 
+
+	// vs.
+	router.Get("/foo/:id", handleRequest)
+
+- Middleware
+
+	// Chain Handlers
+	http.HandleFunc("/foo", doSomethingFirst(handleRequest))
+
+	// vs.
+	router.Use(doSomethingFirst)
+	router.Get("/foo", handleRequest)
+
+- Request Context
+
+* What I use
+
+.link Gin https://github.com/gin-gonic/gin
+Gin includes route handler, middleware, context and a few other things. [[https://github.com/labstack/echo][Echo]] looks pretty nice too.
+
+* Project Structure
+
+	+ /my_app 
+	|-+ /controllers
+	| `--accounts.go		
+	|-+ /models
+	| `-- account.go		
+	|-+ /services
+	  `-- init.go
+	  `-- accounts.go		
+
+- Packages help prevent global service references within app
+
+* Single Responsibility Principle
+
+- Keep logic within the services, not the models (An ORM is *not* required)
+- Keeping models simple prevents global services (db, redis) and keeps references in one place (the services).
+- Controllers handle the request and enforce permissions then delegate logic to the services.
+
+* Model
+
+	package models
+
+	type Account struct {
+		Id                string `jsonapi:primary,account`	
+		FirstName         string `jsonapi:"attr,first_name" json:"first_name" gorethink:"first_name"`
+		LastName          string `jsonapi:"attr,last_name" json:"last_name" gorethink:"last_name"`
+		Email             string `jsonapi:"attr,email" gorethink:"email"`
+		Password          string `jsonapi:"attr,password" gorethink:"-"`
+		EncryptionSeed    string `jsonapi:"-" gorethink:"encryption_seed"`
+		EncryptedPassword string `jsonapi:"-" gorethink:"encrypted_password"`
+	}
+
+* Controller
+
+	func HandleGetAccount(c *gin.Context) {
+		// middleware and url data
+		var account = c.MustGet(CtxAccount).(models.Account)
+		var urlAccountId = c.Params.ByName("id")
+
+		// services
+		var leagueSrv = services.NewLeagueService()
+		var roleSrv = services.NewRoleService()
+
+		// return account with sideloaded leagues and service in json payload
+	}
+
+* Services
+
+ 	Package that wraps up app logic and references to external services.
+
+Creating a type prevents global dependency references and makes it easy to inject the services when testing.
+
+	package services
+
+	type Account struct {
+		rethink *r.Session
+	}
+
+	func NewAccountService() Account {
+		return Account{rethink: rSess}  // rSess is a global package reference
+	}
+
+	func (a *Account) Create(account *models.Account) (*models.Account, error) {
+		// ...
+	}
+
+
+* JSON-Web-Tokens (JWT)
+[[https://jwt.io][More Info]]
+
+.image jwt.png
+  
+* Payload
+
+	A Specification for Building APIs in JSON
+
+Provides consistency in payload structure for different APIs ( [[https://jsonapi.org][jsonapi.org]] )
+
+	{ "links": {...},
+	  "data": [{
+		"type": "articles",
+		"id": "1",
+		"attributes": { ... },
+		"relationships": {
+			"author": { "data": {"type": "author", "id": 9 } }
+		}
+	  }],
+	  "included": [{
+		"type": "author",
+		"id": "9",
+		"attributes": { ...  },
+	  }, {
+		"type": "comments",
+		"id": "5",
+		"attributes": { ...  },
+	  }] }
+
+* Testing
+
+My tests tend to focus on black-box testing the endpoints.
+
+- Initially I started doing full blackbox testing by making http endpoint requests
+- Changing the tests to testing the HandlerFuncs directly via `httptest.NewRecorder`, didn't result in any huge time savings.
+- Slower tests, but complete
+- Lower level tests are still done when required
+
+* Libraries 
+
+.link https://github.com/shwoodard/jsonapi
+.link https://github.com/gin-gonic/gin gin-gonic/gin
+.link https://github.com/codegangsta/gin codegangsta/gin
+.link https://github.com/dancannon/gorethink dancannon/gorethink
+.link https://github.com/dgrijalva/jwt-go dgrijalva/jwt-go
