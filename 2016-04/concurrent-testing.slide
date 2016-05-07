@@ -1,0 +1,179 @@
+Testing Concurrent Things
+25 Apr 2016
+Tags: edmonton-go, golang, testing
+
+Matthias Stone
+CTO, Bellstone Engineering
+matthias@bellstone.ca
+@MatthiasStone
++MatthiasStone
+
+
+* Audience survey
+
+Who has experience with...
+
+- Test code in Go?
+- Testing concurrent applications?
+
+
+
+
+* Go testing basics
+
+The go tool provides builtin testing facilities. To use them simply create a file:
+- Named <name>_test.go
+- With functions that take the form func Test<function>(t *testing.T)
+
+.code concurrent-testing/basic_test.go
+
+Running the test is very straightforward. go test <package> will test a specific package
+
+  go test basic_test.go
+  ok      command-line-arguments  0.001
+
+
+
+
+* Data Race Detector
+
+The most important tool for testing concurrent code is the built in data race detector.
+
+- Included with the go tool since 1.1
+- Can be used with tests or compiled binaries
+- Identifies memory accesses & writes that violate the Go Memory Model
+- Reports race events that actually occurred
+# Even if they didn't cause unexpected behaviour
+- Tests that trigger race conditions will fail
+
+* Using the race detector
+
+All go tool commands that build code support the race detector:
+
+   $ go test -race mypkg    // to test the package
+   $ go run -race mysrc.go  // to run the source file
+   $ go build -race mycmd   // to build the command
+   $ go install -race mypkg // to install the package
+
+.caption Lifted from the data race detector documentation, https://golang.org/doc/articles/race_detector.html
+
+* Example of race condition
+
+.code concurrent-testing/race_test.go /b :=/,/log.Println/
+
+Running this under -race will produce a report that contains:
+
+- Stack traces for both the goroutines involved in the race
+- Stack traces for the spawn point of those goroutines
+
+These reports identify unsynchronized memory access, not unexpected behaviour.
+The above frequently prints 3 for me, but the race detector still sees it.
+
+* -race detection output
+
+  WARNING: DATA RACE
+  Read by goroutine 8:
+    command-line-arguments.TestWithRace.func2()
+        github.com/edmontongo/presentations/2016-04/concurrent-testing/race_test.go:11 +0x32
+
+  Previous write by goroutine 7:
+    command-line-arguments.TestWithRace.func1()
+        github.com/edmontongo/presentations/2016-04/concurrent-testing/race_test.go:10 +0x44
+
+  Goroutine 8 (running) created at:
+    command-line-arguments.TestWithRace()
+        github.com/edmontongo/presentations/2016-04/concurrent-testing/race_test.go:11 +0x92
+    testing.tRunner()
+        /home/matthias/devel/tools/go/src/testing/testing.go:473 +0xdc
+
+  Goroutine 7 (finished) created at:
+    command-line-arguments.TestWithRace()
+        github.com/edmontongo/presentations/2016-04/concurrent-testing/race_test.go:10 +0x70
+    testing.tRunner()
+        /home/matthias/devel/tools/go/src/testing/testing.go:473 +0xdc
+
+
+* Configuring -race
+
+The GORACE environment variable can be used to configure logging, exit behaviour, etc.
+
+The most useful option is strip_path_prefix, I recommend setting it in your .profile or similar:
+
+   GORACE="strip_path_prefix=$HOME/go/"
+
+This will remove $HOME/go/ from the filepaths reported by the race detector.
+
+
+
+
+* Dealing with blocking timeouts and deadlocks
+
+.code concurrent-testing/concurrent_test.go /^func TestBlocking/,/^}/
+
+- Can be used with functions that fail to return due to deadlock
+- Can also be used for functions that we expect to return in a very short time
+- If tests do not watch for deadlocks and timeouts, there is a 10 minute global timeout that can be set with the -timeout flag
+
+* Testing concurrent ordering
+
+Testing ordering of blocking behaviour is difficult, but useful for checking invariants of:
+
+- Functions that must block until a certain state is reached
+- Pools, to assert that new objects are available strictly after an object is returned
+
+* Limitations of testing concurrent operations
+
+- All t.FailNow and t.Fatal operations should be called from the core goroutine
+- Running goroutines continue at the end of a test
+- The order in which goroutines finish cannot be tested as it is unspecified
+- Only possible to test "function a won't return until function b is called"
+
+* Example of testing a concurrent operation
+
+.code concurrent-testing/concurrent_test.go /^func TestOrderedExecution/,/^}/
+.caption Note that we must use the same channel for both goroutines
+
+
+
+
+* testing.T.Parallel()
+
+- All tests that call .Parallel() will block until all other tests in the package that are parallel are ready to go
+- All other tests are run first (to find out if they call .Parallel())
+- 0.5% of tests in the standard library use this
+- The majority of those are for reducing the realtime of testing timeouts in the net package
+- This can be useful, but only for the case of accelerating slow running isolated tests
+
+
+
+
+* Tips
+
+- Test with as few goroutines as possible
+- Try to run the test instrumentation in the main goroutine
+- Provide an exported concurrent-safe test double with additional helpers
+
+* Test double example
+
+.code concurrent-testing/double.go /MyType/,/END OMIT/
+
+* Finding rare timing bugs
+
+The go test command can run tests repeatedly, saving time on compiling and process startup.
+This is useful when a bug depends on non-deterministic behaviour.
+
+   go test -race -n 1000 <packagename>
+   go test -race -n 1000 .
+   go test -race -n 1000 ./...
+   go test -race -n 1000 -run TestFunctionThatHasBug
+
+
+
+
+* Questions/Discussion
+
+* References
+
+.link https://golang.org/ref/mem Go Memory Model
+.link https://golang.org/doc/articles/race_detector.html Data Race Detector
+.link https://golang.org/pkg/testing Testing Package
