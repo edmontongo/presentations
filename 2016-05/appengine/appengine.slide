@@ -1,0 +1,212 @@
+Google App Engine with Go
+
+Chris Olsen
+olsen.chris@gmail.com
+
+* Background 
+
+- I needed to meet a hard deadline
+- I decided to give App Engine a go (unintended pun)
+ 
+* A Little About Me
+ 
+* I Hate DevOps 
+
+* Why I Hate it
+
+- Setting up a server
+- Maintaining a server
+- Creating deployment scripts 
+- Setting up system monitoring
+- Worrying about scaling...not that probably have to
+- Ensuring that the Go app is restarted on a panic
+- Database backups
+- Port blocking with firewall 
+- SSL certs
+- ...
+
+* AppEngine Rulz! 
+
+- It's like having some super awesome DevOps engineer working with you
+
+* Let's Create an App
+
+* App Engine Setup
+
+.link https://console.cloud.google.com App Engine Setup
+
+.image project.png 
+
+* app.yaml
+
+	application: your-app-id 
+	version: 1
+	runtime: go
+	api_version: go1
+
+	handlers:
+	- url: /.*
+	  script: _go_app
+
+Check out the [[https://cloud.google.com/appengine/docs/go/configuration-files][configuration files]] for more options and other services.
+
+- cron.yaml (cron tasks)
+- dispatch.yaml (routing)
+- dos.yaml (ip blocking)
+- queue.yaml (heavy task queuing)
+- index.yaml (datastore indexing)
+
+* Base Code  
+
+	package yourappname 
+
+	import (
+		"net/http"
+		"github.com/julienschmidt/httprouter"
+	)
+
+	func init() {
+		router := httprouter.New()
+		router.GET("/", handleHelloWorld)
+		http.Handle("/", router)
+	}
+
+	func handleHelloWorld(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+		fmt.Fprintf(w, "Hello World")
+	}
+
+* Deploy
+
+	goapp deploy
+
+.iframe http://giphy.com/embed/XreQmk7ETCak0
+
+* Datastore
+
+App Engine's Datastore is a nosql database, but due to the ability to define relations, it has some of the benefits of an sql database.
+
+* Models
+
+	type Person struct {
+		Name  string 		  `json:"name"`
+		Email string  		  `json:"email"`
+		PhoneNumbers []string `json:"phonenumbers"`
+	}
+
+	type Task struct {
+		Details string 	`json:"details"`
+	}
+
+*Note the lack of ids and relations
+
+* Relations
+
+Model relationships are defined within the code...there is a benefit to this.
+
+	Person          Project
+	  |               |
+	  +- task 1       +- task 3
+	  |               |
+	  +- task 2       +- task 4
+
+The relationships are not part of the model.
+
+	// POST /persons/:personId/tasks
+	personId := params.ByName("personId")
+	personKey, err := datastore.DecodeKey(personId)
+
+	key, err := datastore.NewIncompleteKey(context, "tasks", personKey)
+	
+	key, err = datastore.Put(context, key, &data)	
+
+* Gotchas
+
+* JSON Payload
+
+We must manually include the datastore key in the json payload
+
+	type Task struct {
+		Key *datastore.Key `json:"id" datastore:"-"`
+		Details string     `json:"details"`
+	}
+
+Api Payload
+
+	...
+	data.Key, err = datastore.Put(context, key, &data)
+	json.NewEncoder(w).Encode(&data)
+
+
+Indexes add to the cost of saving to the datastore, so don't add any more indexes than you need!
+
+* Pricing
+
+Every database query, sent email costs you money $$$. [[https://cloud.google.com/appengine/pricing][Docs]]
+
+.image pricing.png
+
+* Memcache is free 
+[[https://cloud.google.com/appengine/docs/go/memcache/using#configuring_memcache][Docs]]
+
+Simple Strings
+
+	item := &memcache.Item{ Key: "somekey", Value: []byte("some value") }
+	memcache.Add(context, item)
+
+	memcache.Get(context, "somekey")
+
+Objects
+
+	// JSON
+	item := &memcache.Item{ Key: "somekey", Object: &task }
+	memcache.JSON.Add(context, item)
+
+	memcache.JSON.Get(context, "somekey")
+
+	// Gob
+	item := &memcache.Item{ Key: "somekey", Object: &task }
+	memcache.Gob.Add(context, item)
+
+	memcache.Gob.Get(context, "somekey")
+ 
+* Testing
+
+Blackbox
+
+- End to End testing
+
+App Engine
+
+- Prevents saving of test data
+
+* Testing Example...Context Please
+	var account = Account{ Id: "1234" }
+
+	func TestEndpoints_CreateProgram(t *testing.T) {
+		type testData struct {
+			data           Program
+			expectedStatus int
+		}
+		tests := []testData{ {data: factory.Program(), expectedStatus: http.StatusCreated} }
+		for _, test := range tests {
+			func(test testData) {
+				data, _ := json.Marshal(test.data)
+				reader := bytes.NewReader(data)
+				inst, _ := aetest.NewInstance(nil)
+				r, _ := inst.NewRequest("POST", "/programs", reader)
+				w := httptest.NewRecorder()
+				c := appengine.NewContext(r)
+				defer c.Done()
+
+				// make api call here with the test context
+				// response tests go here 
+			}(test)
+		}
+	}
+
+* Summary
+
+- This was a brief App Engine summary, there is a lot more supplied that what I covered.
+- App Engine removes a lot of DevOps 
+- Allowed me to get things done by the deadline 
+- It comes with it's quirks, but in my opinion, but worth the trade off
