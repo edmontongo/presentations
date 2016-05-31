@@ -1,0 +1,27 @@
+<blockquote>
+<pre>
+                            client
+                     Hello    |    World
+                      |    +-----+    ^
+                      |    | REQ |    |
+                      V    +-----+    |
+               1|823|Hello    |    1|823|World
+                      |    +-----+    ^
+                      |    | REP |    |
+                      |    +-----+    |
+                      |    | REQ |    |
+                      V    +-----+    |
+         0|299|1|823|Hello    |    0|299|1|823|World
+                      |    +-----+    ^
+                      |    | REP |    |
+                      |    +-----+    |
+                      |    | REQ |    |
+                      V    +-----+    |
+   0|446|0|299|1|823|Hello    |    0|446|0|299|1|823|World
+                      |    +-----+    ^
+                      |    | REP |    |
+                      V    +-----+    |
+                     Hello    |    World
+                           service
+</pre>
+</blockquote>
