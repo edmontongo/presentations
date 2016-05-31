@@ -1,0 +1,141 @@
+Stateful Messaging in Go
+Making your MoM a better communicator
+15:04 30 May 2016
+
+Gerrit Renker
+
+* Scope
+
+- recurring _patterns_ in messaging
+- _reliability_ a main issue ("send and pray")
+- issues _above_transport_layer_ (TCP head-of-line problem)
+
+
+* Timeline
+
+Pieter Hintjens, Martin Sustrik: iMatix
+
+- 2004: AMQP standard
+- 2006: OpenAMQ
+- 2007: ØMQ
+- 2013: nanomsg
+- 2014: go-mangos
+
+* What is ØMQ?
+
+- stateful sockets (~ BSD socket + FSM)
+.image images/concepts6.png
+
+- message queueing
+- messaging _patterns_ (`req/rep`, `pub/sub`, `push/pull`, message router)
+
+- base library in C, lots of bindings to other languages
+
+- _used_by_ AT&T, Cisco, EA, Los Alamos Labs, NASA, Weta Digital, Zynga, Spotify, Samsung, Microsoft, and CERN
+
+
+* ØMQ Patterns: request-reply
+
+- `REQ` socket: _client_ that _connects_
+- `REP` socket: _server_ that _listens_
+
+.image images/req-rep.png
+
+- does not need a connection!
+- client/server may come and go at any time
+- message _envelope_ contains the _reply-to_ address
+
+*  REQ/REP Parameters and Timing
+
+.image images/req-rep-diagram.png
+
+* ØMQ REQ/REP example
+
+_Client_:
+.code req-rep.go
+_Server_:
+.code req-rep-server.go
+
+* ØMQ_ Limitations
+- REQ/REP FSM is only 1 bit
+- state machine can 'hang' at certain disconnects
+- not robust against server crash or lost request/reply
+- adding robustness requires low-level tweaks
+- transports limited to `ipc://` and `tcp://`
+
+* nanomsg
+
+- improvements by ØMQ author Martin Sustrik
+- shutdown problems solved by _adding_state_machines_
+- _plugable_transports_ (TLS, websockets ...)
+- aims at _protocol_ _building_ _blocks_ for distributed applications
+- _Scalability_ _Protocols_: `REQREP`, `PAIR`, `PUBSUB`, `PIPELINE`, `BUS`, `SURVEY`
+- protocols specified by IETF-like drafts
+
+* Scalability Protocol REQ/REP
+
+Protocol supports _routing_ through multiple nodes:
+
+   --- requests -->
+
+   +-----+   +-----+-----+   +-----+-----+   +-----+
+   |     |-->|     |     |-->|     |     |-->|     |
+   | REQ |   | REP | REQ |   | REP | REQ |   | REP |
+   |     |<--|     |     |<--|     |     |<--|     |
+   +-----+   +-----+-----+   +-----+-----+   +-----+
+
+   <-- replies ---
+
+Requests use _channel_IDs_ for `reply-to` and _unique_message_IDs_:
+
+  +-+------------+-+------------+   +-+------------+-------------+
+  |0| Channel ID |0| Channel ID |...|1| Request ID |   payload   |
+  +-+------------+-+------------+   +-+------------+ ------------+
+
+
+* Routed REQ/REQ example
+
+
+.html sp-req-rep.html
+
+
+* Scalability Protocol BUS
+
+.image images/bus.png
+
+Deliver message among all peers on the `BUS`.
+
+* Scalability Protocol SURVEY ("Everybody Votes")
+
+- question from 1 node is _broadcast_ to group
+
+.image images/survey.png
+
+- each node in the group _responds_ to the message within time window
+- answers are accepted within a time window
+.link http://dahernan.github.io/2015/03/17/service-discovery-with-mangos-and-go/ Survey-Heartbeat
+
+* Go mangos
+
+.image images/mangos.jpg
+
+- brings nanomsg's _Scalability_ _Protocols_ to [[https://godoc.org/github.com/go-mangos/mangos][Go]]
+- TLS support out-of-the-box
+- transports: `inproc`, `tcp`, `tls+tcp`, websockets (w, w/o TLS)
+- by illumos/OpenSolaris author Garrett D'Amore
+
+* go-mangos REQ/REP
+
+_Client_:
+.code mango-client.go
+
+_Server_:
+.code mango-server.go
+
+* go-mangos REQ socket
+
+.code req-socket.go /^\/\//,/^}/
+
+.code req-socket.go /^type/,/^}/
+
+* DEMO TIME
