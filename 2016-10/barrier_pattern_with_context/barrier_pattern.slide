@@ -1,0 +1,139 @@
+Barrier Pattern in Go
+A look at sync/errgroup in its Context
+24 Oct 2016
+Tags: golang, go, design patterns, barrier pattern, Context, WaitGroup, errgroup
+
+Gerrit Renker
+
+## Introduction
+* Structure and Context
+
+.image images/barrier-reef.jpg
+
+1. Context
+2. Wait Collectives
+3. ErrGroup
+
+
+* Context & Cancellation
+
+* "Infinite" Generator - no cancellation
+
+.play infinite_generator.go
+
+* Cancellable Generator - what is the last number?
+
+.play infinite_generator_with_close.go
+
+* Cancellable Generator - using Context
+
+.play infinite_generator_with_cancel.go
+
+* Context package in stdlib
+
+  type Context interface {
+        Done() <-chan struct{}
+        
+        Err() error                              // nil if not expired
+        Deadline() (deadline time.Time, ok bool) // false if no deadline set
+        Value(key interface{}) interface{}       // controversial :-)
+  }
+
+- now also part of `os/exec`, `net/http`
+- pass `ctx` as _first_argument_ in functions
+
+_Nested_function_trees_:
+- *parent:* `context.Background()` or `context.TODO()`
+- *child:* `context.With{Cancel,Deadline,Timeout}()`
+
+
+* Example - signal handler using Context
+
+.code  example_signal_handler.go
+
+## WaitGroup Section
+
+*  
+
+.image images/and_now_we_wait.jpg
+
+* Barrier Pattern
+
+.image images/Fork_join.svg.png
+
+   threads = [threading.Thread(target=myFunc, name=d.name, args=(d,)) for d in dvols]
+   for t in threads:
+       t.start()
+
+   for t in threads:
+       t.join()
+
+* Barrier with sync.WaitGroup
+
+.play waitgroup_example_anonymous.go
+
+* Don't panic
+
+.play waitgroup_panic.go
+
+# ERRGROUP SECTION
+
+* Parallel Error Handling
+
+.image images/503-Error.jpg
+
+* Capturing async errors
+
+`import` [[https://github.com/chrisolsen/async][github.com/chrisolsen/async]]
+
+.code -numbers chris_async.go
+
+
+* Async errors with errgroup
+
+`import` [[https://godoc.org/golang.org/x/sync/errgroup][golang.org/x/sync/errgroup]]
+
+.code -numbers errgroup_Go.go
+
+* ErrGroup Core
+
+.code errgroup_struct.go
+
+_..._and_it_has_only_2+1_methods_:
+
+.code errgroup_interface.go
+
+* ErrGroup Wait() Barrier
+
+.code errgroup_wait.go
+
+- wraps `wg.Wait`
+- returns `err` (if any)
+- runs `cancel` (see next slide)
+
+* What cancel does 1/2
+
+.play http_get_example_without_cancel.go
+
+* What cancel does 2/2
+
+.play http_get_example_with_cancel.go
+
+* Final Example - creating stub VMs in parallel
+
+.code -numbers parallel_server_creation.go
+
+## CONCLUSION
+
+* Wrap-Up
+
+- [[https://godoc.org/golang.org/x/net/context][context.Context]] allows to _cancel_trees_of_concurrent_goroutines_
+- [[https://godoc.org/sync#WaitGroup][sync.WaitGroup]] implements the _Barrier_ pattern
+- [[https://godoc.org/golang.org/x/sync/errgroup][sync.ErrGroup]] extends `WaitGroup` with _error_capture/handling_
+
+* Links
+
+- [[https://blog.golang.org/pipelines][Go Concurrency Patterns: Pipelines and cancellation]]
+- [[http://blog.ralch.com/tutorial/golang-concurrency-patterns-context/][Concurrent patterns in Golang: Context]]
+- [[https://godoc.org/golang.org/x/sync/errgroup][sync/x/errgroup]]
+- [[https://www.oreilly.com/learning/run-strikingly-fast-parallel-file-searches-in-go-with-sync-errgroup][gogrep with errgroup]]
