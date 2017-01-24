@@ -1,0 +1,7 @@
+// MyType is an example type.
+message MyType {
+    // Id is a unique ID for this MyType.
+    uint64 id = 1;
+    // Name is the name of this MyType.
+    string name = 2;
+}
