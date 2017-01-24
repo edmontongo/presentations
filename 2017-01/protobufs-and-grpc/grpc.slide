@@ -1,0 +1,69 @@
+Protocol Buffers and gRPC in Go
+Edmonton Go
+23 Jan 2017
+Tags: go, grpc, protobufs
+
+Adam Wolfe Gordon
+Software Engineer, DigitalOcean
+awg@xvx.ca
+@maybeawg
+
+* About Me
+
+- I work on storage-related things at DigitalOcean. (But I live here - I'm remote.)
+- I write Go pretty much full-time.
+- In the past I wrote C and C++ pretty much full-time.
+
+* Agenda
+
+Protocol Buffers
+
+- What they are
+- Niceties & Not so niceties
+- Example
+
+gRPC
+
+- What it is
+- Niceties
+- Example
+
+* Protocol Buffers - What Are They?
+
+- A serialization format developed by Google.
+- Define data types ("messages") in a language-neutral format:
+
+.code example1.proto
+
+- Idiomatic code is generated for your language of choice (e.g., Go):
+
+.code example1.pb.go
+
+* Protocol Buffers - Niceties & Not so niceties
+
+Niceties:
+- Supports a wide variety of languages - Go, C++, C#, Ruby, Python, Java, etc.
+- Backward compatibility built in - can always add fields to the end of a message.
+- Binary format - faster and smaller than JSON or XML.
+
+Not so niceties:
+- Not self-describing - need to have a schema to parse them.
+- Binary format - hard to inspect.
+
+* Protocol Buffers - Example
+
+* gRPC - What it is
+
+- An RPC library developed by Google.
+- Uses protocol buffers for message serialization.
+- Uses http2 as its transport.
+- Supports most of the same langauges as protocol buffers.
+
+* gRPC - Niceties
+
+- Generates all the RPC server and client "glue" code for you.
+- Uses TLS by default (though you can tell it not to for testing).
+- Surprisingly fast.
+- Allows for RPC across languages - e.g., Go server with Ruby client.
+
+* gRPC - Example
