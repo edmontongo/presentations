@@ -1,0 +1,62 @@
+* Start
+
+I didn't know what this talk was going to be until yesterday.
+
+About a year ago I read that blog post there and
+it profoundly influenced the way I think about interfaces.
+
+What I hadn't done is define how I was influenced, so I'd like to thank you for the oppurtunity to do so.
+
+In the post Jeremy Bowers (he's the writer) states that the UNIX ideal is that everything is a file.
+
+The problem is that everything isn't a file.
+
+*Change
+
+In UNIX, sockets, UDP streams, and CD drives are all files but each of them has different charateristics.
+You can't seek in a socket.
+You don't close UDP streams.
+And you need device specific input/output operations for cd drives.
+
+In all likelihood, nearly every element of a UNIX file doesn't apply to some invocation of a "file"
+
+GO fixed this by creating interfaces.
+
+*Change
+
+Everything is an inteface.
+Since interfaces describe behaviour and everything does something it is possible for anything to be an interface.
+
+Most of the time there are 3 things that are done with open flat files. Read, Write, and Close.
+
+Can anyone take a guess as to what interfaces should exist to describe a flat file?
+
+
+Likely response: Exactly right. 
+
+
+Can you name anything other than flat files that could use those interfaces to describe their behaviour?
+
+
+Likely response: Good, you get the idea.
+
+
+The big benefit of using interfaces is that it makes code much easier to re-use
+and in paticular I'd like to talk about how interfaces can be used in APIs
+
+*Change
+
+Let's pretend we're going to create an online casino.
+We'll offer blackjack, craps, roulette, baccarat, pai gow, chuck-a-luck, teen patti, sic bo, and war.
+Maybe some more it doesn't really matter right now.
+
+Each of these games has it's own set of rules, with various types of bets and different payouts for those bets.
+
+*Change
+
+
+What all of these games have in common is you need to allow players to place bets, play the game, and then settle the results.
+
+*Change
+
+

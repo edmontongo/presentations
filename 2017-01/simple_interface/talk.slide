@@ -1,0 +1,70 @@
+Interfaces Are Better
+
+
+
+Brett McKay
+
+* Go: More UNIX than UNIX
+
+.link http://www.jerf.org/iri/post/2931
+
+UNIX's ideal is that "everything is a file"
+
+* Everything is NOT a file
+
+- Some need ioctls (input/output controls) e.g. CD drives
+- Some can't be seeked e.g. sockets
+- Some can't be closed e.g. UDP streams
+
+Nearly every element of a UNIX file doesn't apply to some "file" invocation.
+
+* Everything IS an interface
+
+Interfaces describe behaviour and everything does something.
+
+In general flat files are:
+- Read
+- Written
+- Opened
+- Closed
+
+What interfaces should exist for flat files?
+
+* Online Casino
+
+Games:
+
+- Blackjack
+- Craps
+- Roulette
+- Baccarat
+- Pai Gow
+- Chuck-a-luck
+- Teen Patti
+- Sic Bo
+- War
+
+* All Games
+
+- Players place bets
+- Game is played
+- Results are settled
+
+* Casino Game Interface
+
+.code croupier.go
+
+* Simple Croupier HTTP implementations
+
+.code http.go /type/,/Do other important stuff/
+
+* Continued
+
+.code http.go /"state"/,/^}/
+
+* Keep interfaces simple
+
+.link https://github.com/mvdan/interfacer
+
+GO Vet tool that tells you if you're not using the smallest interface possible.
+If you accept a ReaderWriter but only Read the Interfacer will inform you.
