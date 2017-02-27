@@ -72,6 +72,8 @@ PRs will become Gerrit CLs (change lists)
 - constraints manifest
 - roadmap coming soon
 
-.link https://blog.gopheracademy.com/advent-2016/saga-go-dependency-management/ The Saga of Go Dependency Management
 .link https://github.com/golang/dep
+.link https://blog.gopheracademy.com/advent-2016/saga-go-dependency-management/ The Saga of Go Dependency Management
+.link https://research.swtch.com/version-sat Version SAT
+.link https://groups.google.com/forum/#!forum/go-package-management go-package-management mailing list
 
