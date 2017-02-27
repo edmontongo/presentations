@@ -1,0 +1,77 @@
+What's Next for Go
+A sampling of proposals beyond 1.8.
+27 Feb 2017
+Tags: edmontongo, golang, workshop
+
+Nathan Youngman
+@nathany
+
+gopher@nathany.com
+https://nathany.com
+
+* Type Aliases
+
+.code alias.go
+
+Defined types for comparison:
+
+.code type.go
+
+.link https://tip.golang.org/ref/spec#Type_declarations
+.link https://golang.org/design/18130-type-alias
+.link https://golang.org/issues/18130
+.link https://talks.golang.org/2016/refactor.article Codebase Refactoring (with help from Go)
+.link https://www.youtube.com/watch?v=h6Cw9iCDVcU GothamGo 2016 Codebase Refactoring (with help from Go)
+
+* Monotonic Elapsed Time Measurements in Go
+
+- wall clock is for telling time
+- monotonic clock is for measuring time
+- `t.Sub`, `Since` in the time package
+- net.Conn and context.Context deadlines
+- use `t.Equal` instead of `==`
+
+.link https://golang.org/design/12914-monotonic
+.link https://blog.cloudflare.com/how-and-why-the-leap-second-affected-cloudflare-dns/ How and why the leap second affected Cloudflare DNS
+
+* First-class fuzzing
+
+Randomized testing for parsers and untrusted inputs.
+
+.link https://golang.org/issues/19109
+.link https://github.com/dvyukov/go-fuzz
+.link https://github.com/dvyukov/go-fuzz#trophies
+
+# adds to built in testing, benchmarks, code coverage and examples
+
+* Bit twiddling
+
+The new `math/bits` library.
+
+.code bits.go
+
+.link https://golang.org/issues/18616
+
+* Accept GitHub Pull requests
+
+PRs will become Gerrit CLs (change lists)
+
+.link https://golang.org/issues/18517
+
+* Where to find more
+
+.link https://golang.org/design
+.link https://github.com/golang/go/issues?q=is%3Aopen+is%3Aissue+label%3AProposal-Accepted See the Proposal-Accepted label
+.link https://groups.google.com/forum/#!forum/golang-dev golang-dev mailing list
+.link https://golang.org/doc/install/source Install Go from source
+
+* Dependency Management
+
+- tagged versions
+- uses the import graph
+- constraints manifest
+- roadmap coming soon
+
+.link https://blog.gopheracademy.com/advent-2016/saga-go-dependency-management/ The Saga of Go Dependency Management
+.link https://github.com/golang/dep
+
