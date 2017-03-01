@@ -1,0 +1,52 @@
+Changes in Go 1.8
+GOPATH
+27 Feb 2017
+Tags: go1.8, GOPATH
+
+Rebecca Walton
+
+waltonr8@mymacewan.ca
+
+* GOPATH
+
+- location of the directory/directories that contain Go code
+- you had set it yourself
+- also had to add $GOPATH/bin to PATH
+
+* Rationale for having a default GOPATH
+
+- new users were confused as to why they had to set the GOPATH
+- make documentation easier
+
+* Proposed Paths 
+
+Considered defaults when GOPATH isn't defined:
+
+- $HOME/gocode
+- $HOME
+- $HOME/gopath
+- $HOME/go
+
+* Final Decision
+
+Unix:
+
+- $HOME/go
+- /usr/local/go/bin added to PATH by the installer
+
+Windows:
+
+- %USERPROFILE%\Go
+- c:\Go\bin added to PATH by the installer
+
+* The Future
+
+- Possibly get rid of GOPATH?
+
+* Resources
+
+- "Getting Started - The Go Programming Language." Accessed Feb. 20, 2017. https://golang.org/doc/install.
+- "How to Write Go Code - The Go Programming Language." Accessed 20 Feb. 2017. https://golang.org/doc/code.html#GOPATH.
+- "Issue #17262: assume GOPATH=$HOME/go if not set." GitHub. Accessed Feb. 21, 2017. https://github.com/golang/go/issues/17262.
+- "Issue #12488: automatically detect GOPATH." GitHub. Accessed Feb. 21, 2017. https://github.com/golang/go/issues/12488.
+- "Issue #17271: incrementally modify the Go toolchain to work without GOPATH." GitHub. Accessed Feb. 21, 2017. https://github.com/golang/go/issues/17271.
