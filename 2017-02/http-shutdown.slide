@@ -1,0 +1,73 @@
+HTTP Server Graceful Shutdown
+27 Feb 2017
+Tags: edmontongo, golang
+
+Lukasz Rozycki
+[[https://lukaszr.com]]
+
+* What is graceful shutdown?
+
+Resource management
+
+- connections
+- files
+- tasks in progress
+
+: resources
+
+* High availability
+ traffic -> Load balancer -> Server 1
+                          -> Server 2
+                            ... 
+
+- timeouts
+- errors
+- data corruption
+
+: system resilience to unfinished operations
+
+* Before Go 1.8
+
+- facebookgo/httpdown
+- braintree/manners
+- tylerb/graceful
+
+* Go 1.8 net.http.Server methods
+
+* func (*Server) Shutdown
+
+ func (srv *Server) Shutdown(ctx context.Context) error
+
+- waits without interrupting active connections
+- 1. Close listeners
+- 2. Close idle connections
+- 3. Wait indefinitely for active connections to return to idle
+- 4. Shutdown
+- If context expires, context error is returned
+- Does not close hijacked connections such as WebSockets
+
+: Shutdown gracefully shuts down the server without interrupting any active connections. Shutdown works by first closing all open listeners, then closing all idle connections, and then waiting indefinitely for connections to return to idle and then shut down. If the provided context expires before the shutdown is complete, then the context's error is returned.
+
+: Shutdown does not attempt to close nor wait for hijacked connections such as WebSockets. The caller of Shutdown should separately notify such long-lived connections of shutdown and wait for them to close, if desired.
+
+* func (*Server) Close
+
+ func (srv *Server) Close() error
+
+- immediately closes all active net.Listeners
+- and any new, active or idle connections
+- ignores hijacked connections (WebSockets)
+
+: Close immediately closes all active net.Listeners and any connections in state StateNew, StateActive, or StateIdle. For a graceful shutdown, use Shutdown.
+
+: Close does not attempt to close (and does not even know about) any hijacked connections, such as WebSockets.
+
+: Close returns any error returned from closing the Server's underlying Listener(s).
+
+* Go 1.8 release party slide deck example
+
+.code http-shutdown/shutdown.go /main\(\) {/,/^}
+
+* Resources
+- [[https://golang.org/pkg/net/http/][Package http]] docs
+- [[https://github.com/davecheney/go-1.8-release-party][Go 1.8 Release Party]] Slide deck - shutdown example
