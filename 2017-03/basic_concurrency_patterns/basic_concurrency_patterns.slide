@@ -1,0 +1,261 @@
+Un-Paralleled Concurrency in Go
+Basic Patterns
+27 Mar 2017
+Tags: edmontongo, golang, concurrency, channels
+
+Gerrit Renker
+
+* Talk Structure
+
+1. Introduction
+2. Generators and Pipelines
+3. Buffered Channels
+4. Multiplexing
+5. Advanced Patterns
+
+ "Concurrency is not Parallelism" -- Go Proverb
+
+* 1. Introduction
+
+* Why does this happen?
+
+.play -edit code/why_does_this_happen.go /func main/,$
+
+
+* Concurrency Models
+
+*Classic:* _communicate_by_sharing_memory_
+- threads + shared memory + mutex
+- _hard_ to reason about
+
+*Go:* _share_memory_by_communicating_
+- share-nothing sequential entities
+- Communicating Sequential Processes (1978)
+- _straightforward_ once you grasp its concepts
+
+*Actor*Model* (1973):
+- actors modify _internal_state_ sequentially
+- only _external_ interaction is _message-passing_
+- Erlang, Akka (Java), [[http://www.slideshare.net/weaveworks/an-actor-model-in-go-65174438][implementable in Go]]
+
+* Channels
+
+- communication FIFO between sender/receiver
+- meant for goroutines (interact with goroutine scheduling)
+
+  ch <- x     // send x onto channel
+  y := <- ch  // receive from channel
+
+- reference/pointer type - must be initialized using `make`
+
+.play -edit code/int_chan.go /var/,/answer/
+
+* Channels and concurrency model
+
+ "Channels orchestrate; mutexes serialize." -- Go Proverb
+
+- decompose software into _independent_concurrent_units_
+- use channels to structure the communication - _lock-free_
+  chan <T>         // bi-directional
+  <-chan <T>       // typecast: receive-only
+  chan<- <T>       // typecast: send-only
+
+
+* Unbuffered (synchronous) channels
+
+- `send` blocks until receiver takes element off channel
+- `receive` blocks until sender puts element in
+- hence *implies*concurrent*communication*
+
+* Synchronization signals 1/2
+
+Use empty struct as "signal":
+
+.play -edit code/done_signal.go /var/,/fmt.Print/
+
+
+* Synchronization signals 2/2
+
+Closing the channel has the _same_effect_:
+
+.play -edit code/done_signal_using_close.go /var/,/fmt.Print/
+
+Pattern is part of the [[https://golang.org/pkg/context/][context]] package.
+
+* Broadcast signals
+
+Closed channels return an _infinite_number_of_zero_elements_.
+
+.play -edit code/closed_channel_1.go /ch :/,/fmt.Printf/
+
+.play -edit code/closed_channel_2.go /close/,/fmt.Printf/
+
+.play -edit code/closed_channel_3.go /close/,/^\s*}/
+
+More scalable than sending individual signals to _n_ receivers,
+when _n_ is unknown.
+
+
+* Writer/Reader Patterns
+
+- *1:1* writer: _synchronization/lock_
+- *1:n* writer: _fan-out_
+- *n:1* writers: _"fastest_response_first"_
+
+_Example_:
+.play -edit code/fetch_urls.go /var/,/fmt.Println/
+
+
+* 2. Generators and Pipelines
+
+* Finite generator
+
+Source _closes_channel_when_done_:
+
+.play -edit code/countdown.go /func countdown/,$
+
+* Infinite generator
+
+Runs fine, but forever!
+
+.play -edit code/infinite_generator.go /func Generate/,$
+
+
+* Generator with shutdown
+
+.code code/generator_with_shutdown.go /func/,/^}/
+
+.play code/generator_with_shutdown.go /ctx, _/,/^\s*}/
+
+* Concurrent Prime Filtering
+
+.play -edit code/prime_sieve.go /func Generate/,$
+
+
+* 3.  Buffered (asynchronous) channels
+
+* Bounded buffer problem
+
+- producer/consumer operate on a _queue_of_finite_size_
+
+.image images/ringbuffer.jpg
+
+- consumer can handle at most _n_ items at a time
+- _producer_ must wait if buffer is _full_
+- _consumer_ must wait if buffer is _empty_
+
+* Bounded buffer in Go
+
+.play -edit code/bounded_buffer.go /var/,$
+
+* Buffered channels
+
+- sender can write up to n elements without blocking
+- receiver blocks as before
+- example: _counting_semaphore_
+
+  tokens := make(chan struct{}, n) // n workers in parallel
+
+  func worker() {
+      tokens <- struct{}{}   // acquire token
+      // long running operation ...
+      <-tokens               // release token
+  }
+- aka _"discotheque_algorithm"_
+
+* Cleaning up the goroutine leak
+
+.play -edit code/fetch_urls_clean_up_goroutine_leak.go /var/,/fmt.Println/
+
+* 4. Multiplexing
+
+
+* Timeout via multiplexing
+
+`select` the next-ready channel:
+
+.play -edit code/timeout.go /func main/,$
+
+Can be used for ticker, heartbeat, timeout.
+
+
+* Message Processing Loop
+
+
+.code code/message_loop.go /func Loop/,$
+
+Same pattern for fan-in, multiple outputs, periodic events.
+
+
+
+* 5. Advanced Patterns
+
+* Futures
+
+.code code/futures.go /START OMIT/,/END OMIT/
+
+The result is returned in the future:
+.play code/futures.go /The future is/,/^\s+}/
+
+* Monitor Goroutine
+
+_Abstract_Data_Type_consisting_of_:
+- _internal_ data + _external_ method(s)
+- only 1 process can be "active" in the monitor at any time
+
+.code code/hashmap.go /GoHash is/,/}/
+.play code/hashmap.go /var gh/,/ENDMAIN/
+
+* Monitor Goroutine
+
+.code code/hashmap.go /type Request/,/^}/
+.code code/hashmap.go /Add/,/ENDMETH/
+
+* Monitor Goroutine
+
+.code code/hashmap.go /func.*loop/,/ENDLOOP/
+
+* Actor Model in Go
+
+_Lock-free_: actor=goroutine+struct, mailbox = `chan`
+
+  func NewActor() *Actor {
+    a := &Actor{ actionChan: make(chan func()) }
+    go a.loop()
+    return a
+  }
+
+  func (a *Actor) loop() {
+    for action := range a.actionChan {
+        action()
+    }
+  }
+
+  func (a *Actor) Do(action func()) { a.actionChan <- action  }
+
+  func (r *Raid1Device) Shutdown() {
+     r.actionChan <- func() {
+           r.SyncLocalLeg()
+           r.ShutdownSockets()
+     }
+  }
+
+From [[https://www.slideshare.net/weaveworks/an-actor-model-in-go-65174438][Bryan Boreham's talk]] at Golang UK 2016
+
+
+
+* Conclusion
+
+_"Go_[...]_is_a_language_of_composition_and_coupling."_ -- [[https://commandcenter.blogspot.ca/2012/06/less-is-exponentially-more.html][Rob Pike]]
+
+- powerful concurrency model
+- simple code
+- lock-free algorithms
+
+* Resources
+- [[http://talks.golang.org/2012/concurrency.slide#1][Go Concurreny Patterns]] (Rob Pike)
+- [[https://blog.golang.org/pipelines][Go Concurrency Patterns: Pipelines and cancellation]]
+- [[https://blog.golang.org/context][Go Concurrency Patterns: Context]]
+- [[https://www.slideshare.net/cloudflare/a-channel-compendium][A Channel Compendium]]
+- [[https://blog.golang.org/advanced-go-concurrency-patterns][Advanced Go Concurrency Patterns]]
+- [[https://www.youtube.com/watch?v=yCbon_9yGVs][An Actor Model in Go]] - [[https://www.slideshare.net/weaveworks/an-actor-model-in-go-65174438][Slides]] -  [[https://github.com/weaveworks/mesh][Code]]
