@@ -1,0 +1,54 @@
+Goroutines
+An introduction.
+27 Mar 2017
+Tags: edmontongo, golang
+
+Nathan Youngman
+@nathany
+
+gopher@nathany.com
+https://nathany.com
+
+* Hello world
+
+.play -edit hello.go
+
+* Go keyword
+
+.play -edit hellogo.go
+
+* Wait a second
+
+.play -edit sleep.go
+
+* What is a Goroutine?
+
+* Processes, Threads, Coroutines
+
+* Processes
+
+- An application is a process.
+
+.image angry_unicorn.png
+
+* Threads
+
+Operating system threads.
+
+.image running-puma.png
+
+* Coroutines
+
+Cooperative multi-threading managed by the language runtime or library.
+
+.image Lua-logo-nolabel.svg.png 200 200
+.image nodejs-logo.png
+* Goroutines
+
+_The_idea,_which_has_been_around_for_a_while,_is_to_multiplex_independently_executing_functions—coroutines—onto_a_set_of_threads._
+
+.link https://golang.org/doc/faq#goroutines
+
+* WaitGroup
+
+.play -edit wg.go
