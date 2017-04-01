@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"sync/atomic"
 )
 
-var counter int
+var counter int64
 
 func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		counter++
+		atomic.AddInt64(&counter, 1)
 	})
 
 	http.HandleFunc("/status", func(w http.ResponseWriter, r *http.Request) {
