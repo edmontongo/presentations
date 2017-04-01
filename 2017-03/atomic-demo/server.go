@@ -11,7 +11,10 @@ var counter int64
 
 func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		atomic.AddInt64(&counter, 1)
+		i := atomic.LoadInt64(&counter)
+		for !atomic.CompareAndSwapInt64(&counter, i, i+1) {
+			i = atomic.LoadInt64(&counter)
+		}
 	})
 
 	http.HandleFunc("/status", func(w http.ResponseWriter, r *http.Request) {
