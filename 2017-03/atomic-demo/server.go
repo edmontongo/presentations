@@ -15,11 +15,11 @@ func main() {
 	})
 
 	http.HandleFunc("/status", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, counter)
+		fmt.Fprint(w, atomic.LoadInt64(&counter))
 	})
 
 	http.HandleFunc("/reset", func(w http.ResponseWriter, r *http.Request) {
-		counter = 0
+		atomic.StoreInt64(&counter, 0)
 	})
 
 	server := &http.Server{Addr: ":8080"}
