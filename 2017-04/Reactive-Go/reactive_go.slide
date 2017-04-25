@@ -1,0 +1,300 @@
+Reactive Programming in Go
+What is required?
+23 Apr 2017
+Tags: edmontongo, golang, concurrency, actor model
+
+Gerrit Renker
+
+* Microservices - "broken" by design
+
+_..._broken_into_smaller_parts_so_that_..._:
+
+- bugs have less of an impact
+- agile development
+- fault isolation/containment
+- single responsibility principle
+
+_Reactive_Principles_ transcend microservices and are emerging.
+
+How to support them in programming?
+
+*  Structure
+
+1. Reactive Manifesto
+2. Actor Model
+3. Reactive Systems
+4. Where to Go from here
+
+* 1. Reactive Manifesto
+
+* Where from?
+
+*Why*: react to
+- Events
+- Load
+- Failure
+- Users
+
+*What*:
+- distributed, concurrent system
+- _micro_services_
+- _message-passing_
+
+*How*:
+- _Reactive_Manifesto_
+- _Actor_Model_
+
+
+* Reactive Manifesto (2014)
+
+.image images/reactive-traits.svg
+
+- tech-agnostic [[http://www.reactivemanifesto.org/][description]]
+- _architectural_pattern_
+
+
+* 4 Reactive Traits
+
+*Responsive*: react to _clients_
+- within time boundary
+- consistent QoS
+
+*Resilient*: react to _failure_
+- _contain_  (_"Let_it_crash"_)
+- _replication,_isolation_,_delegation_
+
+
+*Elastic*: _react_to_load_
+- add/decrease resources
+- space-based architecture
+
+*Message*Driven*: react to _events_
+- loose coupling
+- location transparency
+
+
+* Reactive Manifesto Summary
+
+- defined pattern to avoid rediscovery
+- composable design principle
+- at all levels of scale
+
+
+* 2. Actor Model
+
+* Actor Model (1973)
+
+- actors modify _internal_state_ sequentially
+- only _external_ interaction is _message-passing_
+
+.image images/actors.png
+
+Erlang, [[http://akka.io/][Akka]], ActorFoundry, Charm++, ...
+
+* Fault tolerance via supervision
+
+- _supervisor_ watches over failing actor
+- errors _propagate_ upwards
+
+.image images/sadactors.png
+
+- _Erlang_: true _process_isolation_ (may terminate)
+- _Akka_: actors share JVM heap (exceptions only)
+
+* Actor Principles
+
+
+*1.*Actor*code*is*sequential*
+- no internal concurrency (as in CSP)
+
+*2.*Actors*own*their*data*
+- shared-nothing (Universal Scalability Law)
+
+*3.*Fault*Tolerance*
+- isolation
+
+*4.*Message-Driven*
+- _asynchronous_ - avoids deadlocks
+- _non-blocking_ - responsive
+
+*5.*Location*Transparency*
+- easy to replicate, replace, relocate
+
+* Actor Model in Akka
+
+.image images/reactive_akka_patterns.jpg 200 _
+
+_Borrows_from_Erlang_:
+- lightweight actors (scala-ble)
+- supervisor hierarchy
+- location transparency (_Erlang_: PID, _Akka_: `ActorRef`)
+
+.image images/remote-actor-path.png 150 _
+
+* Actor Model in Go
+
+- _actor_: goroutine + struct
+- _mailbox_: `chan`
+
+  func NewActor() *Actor {
+      var a = &Actor{ actionChan: make(chan func()) }
+      go a.loop()
+      return a
+  }
+
+  func (a *Actor) Do(action func()) {
+      a.actionChan <- action
+  }
+
+  func (a *Actor) loop() {
+      for action := range a.actionChan {
+              action() // one at a time
+       }
+  }
+
+From [[https://www.slideshare.net/weaveworks/an-actor-model-in-go-65174438][Bryan Boreham's talk]] at Golang UK 2016
+
+* 3. Reactive Systems
+
+* Event Sourcing (EDA)
+
+ Capture all changes to an application state as a sequence of events.
+
+- create an _event_ for every _state_change_ of the object
+- _persist_ event stream in order (append-only)
+
+.image images/event-sourcing.png
+
+- allows to replay/restore/undo state
+- basis of [[https://martinfowler.com/bliki/CQRS.html][CQRS]]
+
+* Reactive Streams
+
+  Reactive Streams is an initiative to provide a standard for asynchronous stream processing
+  with non-blocking back pressure.
+
+- standardize [[http://www.reactive-streams.org/][runtime environments]] (JVM and JavaScript)
+- as well as [[https://github.com/reactive-streams/reactive-streams-io/][network protocols]]
+
+
+.image images/akka.png 70 _
+
+_Implemented_by_:
+- Akka streams
+- MongoDB
+- Apache Kafka
+- Cassandra
+
+
+
+* Reactive Extensions
+
+[[http://reactivex.io][ReactiveX]]:
+API for asynchronous programming with observable streams
+
+.image images/Reactive-Extensions.png 300 _
+
+_Combines_best_ideas_from_:
+- Observer Pattern
+- Iterator Pattern
+- Functional Programming
+
+* Reactive Extensions
+
+.image images/reactive_sequence.png
+
+C# Origins (Meijer):
+
+- *Pull*: `IEnumerable<T>`, `IEnumerator<T>`
+- *Push*: `IObservable<T>`, `IObservable<T>`
+
+* Reactive Extensions
+
+Only 3 Handlers:
+
+  OnDone()
+  OnError(err error)
+  OnNext(item interface)
+
+.image images/E2EBeckmanMeijerRx_large_ch9.png
+
+RxJava, RxJS, Rx.NET, RxScala, RxClojure, RxSwift, ...
+
+
+* Reactive Extensions in Go
+`import` [[https://github.com/reactivex/rxgo]["github.com/reactivex/rxgo"]]
+
+.image images/B06127_MockupCover.png 200 _
+
+  watcher := observer.Observer{
+      DoneHandler: func() {
+          fmt.Println("Done!")
+      },
+      ErrHandler: func(err error) {
+          fmt.Printf("Encountered error: %v\n", err)
+      },
+      NextHandler: func(item interface{}) {
+          fmt.Printf("Processing: %v\n", item)
+      },
+  }
+
+
+* 4. Where to Go from here
+
+* Go support for reactive
+
+*Pros*:
+- CSP supports Actor Model
+- First-class functions
+- ReactiveX support (library)
+
+*Cons*:
+- no process isolation (compare Akka, Erlang)
+- no supervisor pattern (error propagation)
+- no location transparency (_"network_channels"_)
+
+* Supervised Go errors
+
+  "Don't Panic" -- Go Proverb
+
+Thou shalt not spread `panic` among thyne goroutines.
+
+*External*Supervisor*:
+- [[https://github.com/mitchellh/panicwrap][panicwrap]]
+- [[http://supervisord.org/][supervisord]]
+
+*Internal*Supervisor*:
+
+  func myHandler() (err error) {
+      defer func(){
+          if p := recover(); p != nil {
+              err = E_COULD_NOT_COMPLETE_TRANSACTION
+          }
+      }()
+      panic("Can't handle this")
+      return nil
+  }
+
+* Your thoughts?
+
+* Wrap-Up
+
+* Summary - Principles
+
+- Modularization (Single Responsibility Principle)
+
+- Sequential Control Flow (lock-free, scalable)
+
+- Shared Nothing (encapsulation)
+
+- Reactive (Message-Driven, Responsive, Elastic, Resilient)
+
+* Resources
+
+- [[http://downloads.lightbend.com/website/reactive-microservices-architecture/Reactive_Microservices_Architecture.pdf][Reactive Microservices Architecture]] - Jonas Bonér
+- [[https://gist.github.com/staltz/868e7e9bc2a7b8c1f754][The introduction to Reactive Programming you've been missing]]
+- [[https://martinfowler.com/eaaDev/EventSourcing.html][Martin Fowler on Event Sourcing]]
+- [[http://www.perfdynamics.com/Manifesto/USLscalability.html][Universal Scalability Law]]
+- [[http://www.brianstorti.com/the-actor-model/][The actor model in 10 minutes]]
+- [[https://www.youtube.com/watch?v=yCbon_9yGVs][An Actor Model in Go]] - [[https://www.slideshare.net/weaveworks/an-actor-model-in-go-65174438][Slides]] -  [[https://github.com/weaveworks/mesh][Code]]
+
