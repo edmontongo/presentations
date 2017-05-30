@@ -1,0 +1,8 @@
+EnumName: guest_type
+
+Values: // HL
+  - Name: RAW
+    Value: 500
+  - Name: MACHINE
+
+EnumDefault: MACHINE

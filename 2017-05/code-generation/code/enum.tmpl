@@ -1,0 +1,16 @@
+typedef enum {{.EnumName}} { // HL
+{{- range $i, $val := .Values -}}
+  {{- if .Value }}
+	{{ .Name }} = {{.Value }},
+  {{- else }}
+	{{ .Name }},
+  {{- end -}}
+{{- end }}
+} {{.EnumName}}; // HL
+
+const char *
+{{.EnumName}}_to_string(const enum {{.EnumName}} val); // HL
+
+const enum {{$.EnumName}}
+string_to_{{$.EnumName}}(const char * const *str); // HL
+

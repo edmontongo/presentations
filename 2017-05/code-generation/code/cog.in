@@ -1,0 +1,7 @@
+ // This is my C++ file.
+ /* [[[cog // HL
+ import cog
+ for fn in ['DoSomething', 'DoAnotherThing', 'DoLastThing']:
+     cog.outl("void %s();" % fn)
+    ]]]*/ // HL
+ //[[[end]]] // HL
