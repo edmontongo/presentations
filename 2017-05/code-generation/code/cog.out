@@ -1,0 +1,8 @@
+ // This is my C++ file.
+ /*[[[cog
+    ...
+   ]]]*/
+ void DoSomething(); // HL
+ void DoAnotherThing(); // HL
+ void DoLastThing(); // HL
+ //[[[end]]]

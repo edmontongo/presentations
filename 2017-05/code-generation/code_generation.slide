@@ -1,0 +1,251 @@
+Code Generation
+Go Automate It
+29 May 2017
+Tags: edmontongo, golang, code generation
+
+Gerrit Renker
+
+* Is this the "Code Generation"?
+
+- _Maturists_: pre 1945
+- _Baby_Boomers_: 1945 - 1960
+- _Generation_X_: 1961 - 1980
+- _Generation_Y_: 1981 - 1995
+- _Generation_Z_: 1996 - ?
+
+
+*  Structure
+
+1. Other languages
+2. Gode generation
+3. Tip of the month
+
+* 1. Other Languages
+
+
+* The queen of languages (1958)
+
+- code generation integral part of *Lisp*
+- `defmacro` built-in: _code_that_generates_code_
+
+.image images/practical_common_lisp.gif 110 _
+
+_Example:_
+
+  ;; when is a form of "if" ...
+  (defmacro when (condition &rest body)
+    `(if ,condition (progn ,@body)))
+
+  ;; unless is when negated
+  (defmacro unless (condition &rest body)
+    `(if (not ,condition) (progn ,@body)))
+    
+_Source_: Peter Seidel, [[http://www.gigamonkeys.com/book/][Practical Common Lisp]]
+
+
+* Code generation in perl
+
+.image images/perl_tt.jpeg
+
+* Code generation in ruby
+
+.image images/Code-Generation-in-Action.jpg
+
+
+* Code generation in Python
+
+.image images/jinja2.png
+
+  >>> from jinja2 import Template
+  >>> t = Template("Hello {{ something }}!")
+  >>> t.render(something="World")
+  u'Hello World!'
+  >>>
+  >>> t = Template("My favorite numbers: {% for n in range(1,10) %}{{n}} " "{% endfor %}")
+  >>> t.render()
+  u'My favorite numbers: 1 2 3 4 5 6 7 8 9 '
+
+* 2. Go
+
+* Python: cog.py
+
+Crafted around [[https://nedbatchelder.com/code/cog/][2004]]:
+
+.code code/cog.in
+
+_..._will_produce_:
+
+.code code/cog.out
+
+* Golang: gocog
+
+Crafted around [[https://github.com/natefinch/gocog][2013]]:
+
+.code code/gocog.go
+
+_Pros_: no separate source files
+_Cons_: limited scalability
+
+* Golang: goa
+.image images/goa-logo.svg
+- code generation for _micro-services_ in Go
+- using goa [[https://goa.design/][API design language]] DSL:
+
+.code code/goa_dsl.go
+
+* Swagger
+
+
+- define REST API using YAML or JSON:
+  SwaggerJSON = json.RawMessage([]byte(`{
+     "consumes": [ "application/io.swagger.examples.todo-list.v1+json" ],
+     "produces": [ "application/io.swagger.examples.todo-list.v1+json" ],
+     "schemes": [ "http", "https" ],
+     "swagger": "2.0",
+     "info": {
+         "title": "Simple To Do List API",
+         "version": "0.1.0"
+     },
+     "paths": {
+       "/": { "get": { "tags": [ "todos" ],
+  ...
+  
+- many languages, including [[https://github.com/go-swagger/go-swagger][go-swagger]]
+- using [[https://www.openapis.org/about][OpenAPI]] Specification (OAS) on [[https://github.com/OAI/OpenAPI-Specification][github]]
+
+.image images/OpenAPI.png 50 _
+
+* Go cmd: Stringer
+
+- generate `fmt.Stringer` implementations
+
+    type Stringer interface {
+      String() string
+    }
+    
+- part of source: [[https://godoc.org/golang.org/x/tools/cmd/stringer][golang.org/x/tools/cmd/stringer]]
+
+.code code/stringer.go
+
+* json enums
+
+Marshal enums to [[https://github.com/campoy/jsonenums][JSON]]:
+
+    type Marshaler interface {
+        MarshalJSON() ([]byte, error)
+    }
+
+    type Unmarshaler interface {
+         UnmarshalJSON([]byte) error
+    }
+
+_Details_: Francesc Campoy, [[https://talks.golang.org/2015/json.slide#1][JSON, interfaces, and go generate]]
+
+
+* enumer: Stringer/JSON for enums
+
+[[https://github.com/alvaroloes/enumer][github.com/alvaroloes/enumer]]
+
+_Example_:
+
+  > enumer -type=Pill -json
+
+_Output_:
+
+    func (i Pill) String() string {
+       //...
+    }
+
+    func PillString(s string) (Pill, error) {
+       //...
+    }
+
+    func (i Pill) MarshalJSON() ([]byte, error) {
+       //...
+    }
+
+    func (i *Pill) UnmarshalJSON(data []byte) error {
+      //...
+    }
+
+
+* 3. Tip of the month
+
+* easygen
+
+- [[https://github.com/go-easygen/easygen][github.com/go-easygen/easygen]]
+
+- *Input*: YAML + `text/template` or `html/template`
+- *Output*: `os.Stdout`
+
+.code code/colors.sh
+ 
+
+* Templating basics
+
+_Import_path_:
+
+   > go list -f '{{ .ImportPath  }}' shcomm/main.go
+   command-line-arguments
+   
+
+_Imports_:
+
+  > go list -f '{{ join .Imports "\n" }}' github.com/kr/pty
+  errors
+  os
+  ...
+  
+_Dependencies_:
+
+  > go list -f '{{ join .Deps "\n" }}' github.com/kr/pty
+  bytes
+  context
+  ...
+
+
+* easygen templating
+
+_Standard_Library_:
+- [[https://golang.org/pkg/text/template/][text/template]]
+- [[https://golang.org/pkg/html/template/][html/template]]
+
+_Case_conversion_:
+- [[https://github.com/danverbraganza/varcaser][github.com/danverbraganza/varcaser]]
+
+- `cls2lc`: `lower_snake_case` -> `lowerCamelCase`
+- `cls2uc`: `lower_snake_case` -> `UpperCamelCase`
+- `cls2ss`: `lower_snake_case` -> `SCREAMING_SNAKE_CASE`
+- `ck2lc`: `kebab-case` -> `lowerCamelCase`
+- ...           
+
+* Enum template (C)
+
+.code code/enum.tmpl
+
+* Enum input
+
+.code code/guest_type.yaml
+
+* Go generate
+
+
+_Usage_:
+
+ go generate [-run regexp] [-n] [-v] [-x] [build flags] [file.go... | packages]
+
+Generared relative to `$GOPATH/src/<PACKAGE_NAME>`.
+
+_Environment_Variables_:
+
+
+- `$GOPACKAGE` - same as `PACKAGE_NAME`
+- `$GOFILE` - filename in `PACKAGE_NAME` directory
+- `$GOLINE` - *line*number*!
+
+
+* Generate inline code
+
+  // go:generate easygen.sh raid_type.yaml
+
+.code code/easygen.sh
