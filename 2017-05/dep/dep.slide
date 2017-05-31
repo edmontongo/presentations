@@ -1,0 +1,77 @@
+dep
+Go dependency management
+29 May 2017
+Tags: edmontongo, golang
+
+Nathan Youngman
+@nathany
+
+gopher@nathany.com
+https://nathany.com
+
+
+* Tools
+
+- Python: pip
+- Ruby: Bundler
+- Node.js: npm
+- Java: Maven
+- PHP: Composer
+- Rust: Cargo
+
+* They let you
+
+- decide when to upgrade dependencies
+- lock in old versions when things break
+- selectively use pre-release versions
+
+* What about Go?
+
+.image gopher-packaging.jpg
+
+* Go dependency management through the ages
+
+- [[https://nathany.com/go-packages/][Go Package Management]]
+
+- [[https://speakerdeck.com/nathany/go-packages][Packages & Dependencies]]
+
+- [[https://blog.gopheracademy.com/advent-2014/deps/][Managing Dependencies]]
+
+* Go get (2012)
+
+By convention, import statements in Go refer to repositories on the Internet:
+
+	import "github.com/RobotsAndPencils/buford/push"
+
+Which can be retrieved with:
+
+	go get github.com/RobotsAndPencils/Buford/push
+
+* The vendor folder (2015)
+
+A copy of all third-party code in your project.
+
+- Locks in a "version".
+- Protects you from a dependency that moves or is removed (leftpad).
+- _Hermetic_view_of_the_world_.
+
+* Introducing dep
+
+	dep init
+
+Creates Gopkg.toml and Gopkg.lock files.
+
+* dep is different
+
+- traverses your source code for imports
+- uses the vendor folder (at least for now)
+- no central registry (for now)
+- doesn't use a flat namespace
+
+* Activity
+
+- Join #vendor and #EdmontonGo on Slack: [[https://invite.slack.golangbridge.org]]
+- Try dep out on your own project or an open source one
+- Read through Gopkg.toml and the [[https://github.com/golang/dep/blob/master/FAQ.md][FAQ]]
+- Provide feedback to the dep project
+
