@@ -1,0 +1,302 @@
+Effective Error Handling 
+Strategy - process - abstraction
+26 Jun 2017
+Tags: edmontongo, error, golang
+
+Gerrit Renker
+
+* Structure
+
+1. Errors are valu{es,able}
+2. Errors are events
+3. Log where they are handled
+4. Annotate error causes
+5. Aggregate if too noisy
+6. Test behaviour, not literals
+7. Concurrent error handling
+
+* 1. Errors Are Valuable
+
+* Errors Are Values
+
+_It's_just_an_interface_:
+
+  // The error built-in interface type is the conventional interface for
+  // representing an error condition, with the nil value representing no error.
+  type error interface {
+        Error() string
+  }
+
+_Source_: `$GOROOT/src/builtin/builtin.go`
+
+
+* Go Error Plumbing
+
+- Go is _low-level_, like C
+- up to us to turn the _plumbing_ into HVAC
+
+
+.background images/plumbing.jpg 400 _
+
+
+* 2. Errors are events - respond to them
+
+* Errors are events
+
+.image images/pagerduty.png
+
+* Errors are events
+
+- in the *big*: _escalate_
+
+.image images/slack.svg 80 _
+
+- in the *small*: _handle_
+
+  function watsuptime() error {
+      // check & return errors
+      if b, err := ioutil.ReadFile("/proc/uptime"); err != nil {
+         return fmt.Errorf("unable to check uptime: %s", err)
+      }
+      fmt.Println("uptime:", string(b))      
+      return nil
+  }
+- like `onError()` event handler
+
+_Source_: Go [[https://go-proverbs.github.io/][proverb]] - [[https://www.youtube.com/watch?v=PAAkCSZUG1c&t=17m25s][_Don't_just_check_errors,_handle_them_gracefully_]]
+
+
+* Code validator: errcheck
+
+A utility out of [[https://github.com/kisielk][Vancouver, B.C.]]:
+
+  go get -u github.com/kisielk/errcheck
+
+
+Check everything beneath the current directory:
+
+  errcheck ./...
+
+_Example_output_:
+
+  src/connection/connection.go:102:10:    e.Close()
+  src/dvol/migrate.go:165:16:             s.write()
+  src/dvol/failover.go:235:17:            os.Remove(s.TFOInfo.Bitmap)
+  src/dvol/create.go:324:13:              lvm.RmLV(leg.Disk)
+  src/dvol/destroy.go:185:23:             } else if s.stopSbdRs(force); err != nil {
+  
+
+* 3. Log errors where handled ...
+
+* Log errors  where they are handled
+
+_..._not_where_they_occur_:
+ 
+: .code code/log_where_handled.go
+.code code/cheney_log_errors.go /Write/,$
+
+_Better_:
+
+.code code/cheney_log_better.go
+
+_Source_: Dave Cheney, [[https://dave.cheney.net/2016/04/27/dont-just-check-errors-handle-them-gracefully][Don’t just check errors, handle them gracefully]]
+
+* 4. Annotate error causes
+
+* Annotate errors
+
+_Much_easier_to_see_what_went_wrong_:
+
+.play -edit code/annotations.go /func foo/,
+
+_Source_: [[http://www.gopl.io/][The Go Programming Language]], 5.4.1, _Error-Handling_Strategies_
+
+
+* Annotate: use errors.Errorf
+
+import [[https://godoc.org/github.com/pkg/errors][github.com/pkg/errors]]
+
+ func Errorf(format string, a ...interface{}) error
+ 
+- extends `fmt.Errorf()`
+- records _stack_trace_ where it is called
+- used by [[https://godoc.org/github.com/pkg/errors][4203]] github packages
+
+.code code/errors.go
+
+_Example_:
+                                                                                         
+ PGCreate failed: test: failed to create remote spanned volume: \
+          device-mapper: create ioctl on test failed:\
+          Device or resource busy; Command failed
+
+
+* Annotate: use errors.Errorf
+
+_Extended_formatting_:
+
+  %s    print the error. If the error has a Cause it will be
+        printed recursively
+  %+v   extended format. Each Frame of the error's StackTrace will
+        be printed in detail.
+
+With `%s` or `%v`:
+
+  failed to read config: open non-existing-config: no such file or directory
+
+With `%+v`:
+
+  failed to read config: open non-existing-config: no such file or directory
+  main.main
+     /home/gerrit/go/sqlite3/use_errorf.go:12
+  runtime.main
+     /opt/programming/go/src/runtime/proc.go:183
+                  
+_Source_: Dave Cheney, [[https://dave.cheney.net/2016/06/12/stack-traces-and-the-errors-package][Stack traces and the errors package]]
+
+* 5. Error aggregation
+
+* Track error internally
+
+ type errWriter struct {
+    w   io.Writer
+    err error
+ }
+
+.code code/err_writer.go
+
+
+_Source_: Rob Pike, [[https://blog.golang.org/errors-are-values][Errors are values]]
+
+* Track error internally
+
+[[https://godoc.org/database/sql][import `database/sql`]]
+
+.code code/db_query.go
+
+* Track error internally
+
+.play code/scanner.go /const/,
+
+* Error utilities: go-multierror
+
+`import` [[http://godoc.org/github.com/hashicorp/go-multierror][github.com/hashicorp/go-multierror]]
+
+ type Error struct {
+     Errors      []error
+     ErrorFormat func([]error) string
+ }
+ func (e *Error) Error() string
+ 
+_Treat_multiple_errors_as_one_:
+
+  func Append(err error, errs ...error) *Error
+
+_Example_output_:
+
+  2 errors occurred:
+
+  * gas leaking from mower
+  * shed has caught fire
+
+
+* Error utilities: errortree
+
+
+`import` [[https://godoc.org/github.com/speijnik/go-errortree][github.com/speijnik/go-errortree]]
+
+.code code/error_tree.go
+
+_Output_:
+
+ 2 errors occurred:
+
+ * child:test0: child error
+ * child:test1: another child error
+
+Specializes `go-multierror` for nested parent/child cases
+
+* Error utilities: spacemonkey
+
+[[https://godoc.org/github.com/spacemonkeygo/errors][github.com/spacemonkeygo/errors]]
+
+Adds _addititial_utilities_ for
+
+- Error hierarchies
+- Stack traces
+- Arbitrary error values
+
+
+* 6. Test behaviour, not literals
+
+* Test behaviour, not literal value
+
+_Value_literals_ are brittle:
+
+.play code/eof.go /io.EOF =/,/^\s+}/
+
+They also _restrict_  your _public_API_.
+
+
+Test for _behaviour_ instead (`os`):
+
+   func IsExist(err error) bool
+   func IsNotExist(err error) bool
+   func IsPermission(err error) bool
+
+
+* Test for behaviour
+
+Go stdlib `net` package:
+
+.code code/net_error.go
+
+For example (DNS):
+
+   func (e *DNSError) Temporary() bool  // temporary problem - retry!
+   func (e *DNSError) Timeout() bool    // lookup timed out
+
+_Also_: `AddrError`, `DNSConfigError`, `OpError`, `UnknownNetworkError`, `syscall.Errno`
+
+* Test for behaviour
+
+  type temporaryer interface {
+  	Temporary() bool
+  } 
+
+Used by [[https://github.com/PuerkitoBio/rehttp/blob/master/rehttp.go][rehttp]] package to _retry_temporary_errors_:
+
+
+.code code/retry_temporary.go
+
+* 7. Concurrent error handling
+
+* Concurrent error handling
+
+`import` [[https://godoc.org/golang.org/x/sync/errgroup][golang.org/x/sync/errgroup]]
+
+.code code/errgroup_interface.go
+
+.image images/Context-is-King.jpg 200 _
+
+* ErrGroup internals
+
+.code code/errgroup_struct.go
+
+_Wait_calls_cancel_:
+
+.code code/errgroup_wait.go
+
+* Example: creating stub VMs in parallel
+
+.code -numbers code/parallel_server_creation.go   /^func/,$
+
+* Recapture
+
+1. Errors are valu{es,able}
+2. Resond to error events
+3. Log where they are handled
+4. Annotate causes
+5. Aggregate if too noisy
+6. Test behaviour, not literals
+7. For concurrent errors, context is king
