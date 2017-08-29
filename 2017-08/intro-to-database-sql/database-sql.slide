@@ -1,0 +1,170 @@
+Introduction to database/sql & jmoiron/sqlx
+28 Aug 2017
+
+Nicholas M. Boers
+Associate Professor, MacEwan University
+boersn@macewan.ca
+https://academic.macewan.ca/boersn
+
+* Introduction
+
+* This talk...
+
+This talk is *not* an introduction to SQL.
+
+Instead, it's a very *brief* introduction to
+
+- database/sql
+- jmoiron/sqlx
+
+* Go's SQL package
+
+Goals:
+
+- generic interface to SQL(-like) databases
+- external database drivers
+- support for concurrency
+
+Concurrency:
+
+- handles per-connection thread safety issues
+- handles connection pools
+- allows for safely sharing *sql.DB
+
+* Drivers
+
+Available drivers (https://github.com/golang/go/wiki/SQLDrivers; 1/2):
+
+- Apache Ignite/GridGain
+- Apache Phoenix/Avatica
+- ClickHouse
+- Couchbase N1QL
+- DB2
+- Firebird SQL
+- MS ADODB
+- MS SQL Server
+- MySQL
+
+* Drivers
+
+Available drivers (https://github.com/golang/go/wiki/SQLDrivers; 2/2):
+
+- ODBC
+- Oracle
+- QL
+- Postgres
+- SAP HANA
+- SQLite
+- Sybase SQL Anywhere
+- Vitess
+- Yahoo! Query Language (YQL)
+
+* database/sql
+
+* database/sql
+
+.image database-sql.png
+
+* Step #1: Imports
+
+SQL package:
+
+ import	"database/sql"
+
+Database driver (sqlite3):
+
+ import _ "github.com/mattn/go-sqlite3"
+
+* Step #2: Opening/closing a database
+
+Opening:
+
+  func Open(driverName, dataSourceName string) (*DB, error)
+
+Testing:
+
+  func (db *DB) Ping() error
+
+Closing:
+
+  func (db *DB) Close() error
+
+* Step #3: Basic interaction
+
+Non-SELECT statements:
+
+ func (db *DB) Exec(query string, args ...interface{}) (Result, error)
+
+and the Result methods
+
+  RowsAffected() (int64, error)
+  LastInsertId() (int64, error)
+
+SELECT one row:
+
+ func (db *DB) QueryRow(query string, args ...interface{}) *Row
+ func (r *Row) Scan(dest ...interface{}) error
+
+SELECT multiple rows:
+
+ func (db *DB) Query(query string, args ...interface{}) (*Rows, error)
+ func (rs *Rows) Next() bool
+ func (rs *Rows) Scan(dest ...interface{}) error
+ func (rs *Rows) Close() error
+
+* Example
+
+Original data (from Edmonton Open Data):
+
+.image assessment.png _ 700
+
+* Example
+
+Commands to simplify the data:
+
+ awk  -F, '
+ 1-NR {
+   gsub(/\$/, "", $5)
+   printf("%d,\"%s%s%s\",%s\n", $1, $2 ? $2 "-" : "", $3 ? $3 " " : "", $4, $5)
+ }' data.csv > simplified.csv
+
+Simplified data:
+
+ 10700507,"2216 GLENRIDDING BOULEVARD SW",132000
+ 10763784,"6220 25 AVENUE SW",320500
+ 10712788,"1296 WATT DRIVE SW",227000
+ 9063801,"10624 69 STREET NW",416000
+ 3882925,"934 127 STREET NW",1184500
+
+* Example
+
+Let's look at some code...
+
+* Other details
+
+- transactions (Begin, Rollback, Commit)
+- prepared statements (Prepare returns pointer to Stmt)
+- context (*Context)
+
+* jmoiron/sqlx
+
+* jmoiron/sqlx
+
+.image jmoiron-sqlx.png
+
+* Motivation
+
+- load structs/slices/maps with results
+- support named parameters
+- Get/Select to quickly fill structs/slices
+
+* Example
+
+Let's look at some code...
+
+We'll focus on:
+
+- import "github.com/jmoiron/sqlx"
+- sql.Open(...) to sqlx.Open(...)
+- *sql.DB to *sqlx.DB
+- examples of new methods: Get, Select, and NamedExec

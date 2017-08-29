@@ -1,0 +1,32 @@
+Obtain City of Edmonton property assessment data from the Open
+Data Portal:
+
+  https://data.edmonton.ca/City-Administration/
+    Property-Assessment-Data/q7d6-ambg
+  
+Download the data as a CSV file and rename it to "data.csv".
+
+Simplify the data using the following awk script:
+
+  awk  -F, '
+  1-NR {
+    gsub(/\$/, "", $5)
+    printf("%d,\"%s%s%s\",%s\n", $1, $2 ? $2 "-" : "", $3 ? $3 " " : "", $4, $5)
+  }' data.csv > simplified.csv
+
+Create a new SQLite database with the following command:
+
+  sqlite3 simplified.sqlite3
+
+Within SQLite, create a new table for the data:
+
+  CREATE TABLE assessment (
+    account integer PRIMARY KEY,
+    address text,
+    value integer NOT NULL
+  );
+
+Within SQLite, import the data with the following two commands:
+
+  .mode csv
+  .import simplified.csv assessment
