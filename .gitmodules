@@ -1,0 +1,3 @@
+[submodule "2017-11/ConcurrencyLecture"]
+	path = 2017-11/ConcurrencyLecture
+	url = https://github.com/qubies/ConcurrencyLecture
