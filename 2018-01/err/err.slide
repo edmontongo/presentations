@@ -1,0 +1,211 @@
+to, err := human()
+To err is human
+22 Jan 2018
+Tags: edmontongo, golang
+
+Nathan Youngman
+@nathany
+
+gopher@nathany.com
+https://nathany.com
+
+* to, err := human()
+
+"To err is human; to forgive, divine."
+- Alexander Pope, [[https://www.poetryfoundation.org/poems/44897/an-essay-on-criticism-part-2][_An_Essay_on_Criticism:_Part_2_]]
+
+* Everyone makes mistakes
+
+
+# computer programming parlance
+
+* Errors are normal
+
+- file not found
+- directory already exists
+- json: cannot unmarshal object
+- ...
+
+# There are a lot
+
+
+* You may have seen
+
+	if err != nil {
+		return err
+	}
+
+# The prevailing pattern of error handling in Go?
+# Annoyed? Disappointed? Unfair?
+
+
+* to, err := human()
+
+"To err is human; to forgive, divine."
+- Alexander Pope, [[https://www.poetryfoundation.org/poems/44897/an-essay-on-criticism-part-2][_An_Essay_on_Criticism:_Part_2_]]
+
+
+* Strive to forgive
+
+* Don't ignore
+
+	to, _ := human()
+
+# Forgiveness doesn't mean ignoring, or to pretend something didn't happen
+
+* forgive | fəˈɡɪv |
+
+"stop feeling angry or resentful"
+
+- Errors are normal
+- Accept that errors will occur
+- Consider the errors
+- Build friendlier, more reliable software
+
+* Wayback
+
+* Error handling in C
+
+.code open.c
+
+# `perror()`
+
+* Error handling in Go
+
+.code open.go
+
+* Multiple return values
+
+	func Open(name string) (*File, error)
+
+- No need for a side channel
+- No special values like -1 for an error
+- Clarity
+- Consistency
+- Useful for other purposes
+
+* Defer simplifies error handling
+# picking up from previous example
+
+	// ... open the file
+	defer f.Close()
+
+	b := make([]byte, 512)
+	_, err := f.Read(b)
+	if err != nil {
+		// handle read error
+		// no need to close file
+		return err
+	}
+
+- Cleanup is always performed
+
+* Early return
+
+	if err != nil {
+		return err
+	}
+
+	// think happy thoughts...
+
+- Take care of errors early
+
+* Guard clause
+
+	if i < 1 || i > 10 {
+		return fmt.Errorf("please provide a number between 1 and 10, inclusive")
+	}
+
+	// The input is valid
+
+- Less to think about later
+# reading code
+
+* Scannable code
+
+- Error handling code is indented
+- The happy path is not
+
+
+* Not my problem
+
+	if err != nil {
+		return err
+	}
+
+# bubble the error up and up
+
+But I want to help...
+
+	if err != nil {
+		return fmt.Errorf("add context here: %v", err)
+	}
+
+
+# not necessarily helping
+
+
+
+* How errors work
+
+
+* The error interface
+
+	type error interface {
+	    Error() string
+	}
+
+
+* Err sentinels
+
+- errors.New()
+- pointer comparisons
+
+
+* Custom error types
+
+
+
+* The Road to Wisdom?
+
+	The road to wisdom? - Well, it's plain
+	and simple to express:
+		Err
+		and err
+		and err again,
+		but less
+		and less
+		and less.
+	       — Piet Hein
+
+
+* Simplify
+
+	err := fn()
+	if err != nil {
+		return err
+	}
+	return nil
+
+Instead:
+
+	return fn()
+
+* Error free subset
+
+
+
+* Errors are values
+
+- error inside a struct
+
+- errors over channels
+
+
+* Resources
+
+- Errors are value: [[https://blog.golang.org/errors-are-values]]
+
+
+
+
