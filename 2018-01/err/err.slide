@@ -240,7 +240,8 @@ Package url:
 
 * Custom error types
 
-	// Error reports an error and the operation and URL that caused it.
+	func Parse(rawurl string) (*URL, error)
+
 	type Error struct {
 		Op  string
 		URL string
