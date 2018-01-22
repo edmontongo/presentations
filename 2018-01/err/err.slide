@@ -329,7 +329,46 @@ Then:
 
 .play -edit zip.go /BEGIN CLOSE/,/END CLOSE/
 
+* Don't panic
+
+# no exceptions. panic in rare situations.
+
+* Panic
+
+	panic("where is my towel?")
+
+`runtime.Error`:
+
+	42 / 0
+
+Crash.
+
+* Recover
+
+Panic bubbles up the call stack of the currently executing goroutine.
+
+	defer func() {
+		if e := recover(); e != nil {
+			// recover from panic
+		}
+	}()
+
+NOTE: net/http servers recover and close the stream
+
+
 * Errors over channels
+
+* Pass errors between goroutines
+
+	errors := make(chan error)
+
+	// ...
+
+	err := doThatThing()
+	if err != nil {
+		errors <- err
+		return
+	}
 
 
 * Resources
