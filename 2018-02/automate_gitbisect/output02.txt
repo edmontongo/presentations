@@ -1,0 +1,18 @@
+$ git show 90912481a26c5ddc3e859ed2bb6a14f05eb8d028 // HL
+commit 90912481a26c5ddc3e859ed2bb6a14f05eb8d028 (refs/bisect/bad)
+Author: Peter Preeper <ppreeper@gmail.com>
+Date:   Tue Feb 20 13:03:22 2018 -0700
+
+    setting bool value
+
+diff --git a/main.go b/main.go
+index c5c0369..03a3e4a 100644
+--- a/main.go
++++ b/main.go
+@@ -2,5 +2,5 @@ package main
+     
+// canDo function returns true
+func canDo() bool {
+-       return true
++       return false
+}
