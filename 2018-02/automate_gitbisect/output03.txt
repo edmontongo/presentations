@@ -1,0 +1,19 @@
+$ git log --oneline --decorate --all --graph // HL
+* 83fe5cd (origin/master, origin/HEAD, master) setting time and relative dimension in space constant
+* 9091248 (refs/bisect/bad) setting bool value
+* 335ba8a (HEAD, refs/bisect/good-335ba8a1dde974c37dcba6902faff6c6673ff44c) add canDo comment
+* d0293af (refs/bisect/good-d0293afa7a4738fbe7ae1de52b4a2d0787cef875) initial code
+* 43e9c86 Initial commit
+
+$ git bisect reset // HL
+Previous HEAD position was 335ba8a... add canDo comment
+Switched to branch 'master'
+Your branch is up-to-date with 'origin/master'.
+
+$ git log --oneline --decorate --all --graph // HL
+* 83fe5cd (HEAD -> master, origin/master, origin/HEAD) setting time and relative dimension in space constant
+* 9091248 setting bool value
+* 335ba8a add canDo comment
+* d0293af initial code
+* 43e9c86 Initial commit
+

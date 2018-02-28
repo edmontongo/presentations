@@ -1,0 +1,21 @@
+$ git bisect run go test -run TestCanDo // HL
+running go test -run TestCanDo
+--- FAIL: TestCanDo (0.00s)
+FAIL
+exit status 1
+FAIL    _/home/peterp/gitbisect 0.001s
+Bisecting: 0 revisions left to test after this (roughly 0 steps)
+[335ba8a1dde974c37dcba6902faff6c6673ff44c] add canDo comment
+running go test -run TestCanDo
+PASS
+ok      _/home/peterp/gitbisect 0.001s
+90912481a26c5ddc3e859ed2bb6a14f05eb8d028 is the first bad commit // HL
+commit 90912481a26c5ddc3e859ed2bb6a14f05eb8d028
+Author: Peter Preeper <ppreeper@gmail.com>
+Date:   Tue Feb 20 13:03:22 2018 -0700
+
+    setting bool value
+
+:100644 100644 c5c03698982d499e06c24b47a154806ae932538c 03a3e4afb6a21cae15831ad03b2708a9e6aeb94b M    main.go
+bisect run success
+

@@ -1,0 +1,41 @@
+Automate Git Repository Bisection with Go Test
+Borrowed from FOSDEM 2018 Go Devroom (Fabian Wickborn Lightning talk)
+3 Feb 2018
+Tags: go, golang, git, bisect, testing
+
+Peter Preeper
+Systems Administrator, A.R. Thomson Group
+ppreeper@gmail.com
+http://www.linkedin.com/in/ppreeper/
+@ppreeper
+
+* git bisect
+- A good weapon of choice for hunting regression bugs.
+- Mark a good and bad commit to limit the search.
+.code bisect.sh
+- Git chooses the next commits, until you catch "The One"
+- You could perform manual test and either choose
+.code gbb.txt
+or
+.code gbg.txt
+
+* Easy to automate
+- Create a new Go test `TestMyRegression` to check for the bug
+- Put it in a dedicated `_test.go` file
+.code regression_test.go
+- Do not commit that file to the repo (just yet)!!
+
+* Start as usual
+.code bisect.sh
+
+* Then let git bisect run work its magic.
+.code output01.txt
+
+* What on Earth have I done?
+.code output02.txt
+Bingo! Found the regression point.
+Commit the test to catch a regression early from now on.
+
+* Now reset to working state
+.code output03.txt
+
