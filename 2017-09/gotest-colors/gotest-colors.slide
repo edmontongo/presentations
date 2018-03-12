@@ -1,0 +1,35 @@
+gotest in color
+25 September 2017
+
+Peter Preeper
+Systems Administrator/Programmer/Catch-All
+A.R. Thomson Group
+preeper.peter@arthomson.com
+ppreeper@gmail.com
+
+
+* Introduction
+
+testing in color with gotest (github.com/rakyll/gotest)
+
+* This talk...
+
+This talk is a brief demo of the gotest in colors
+
+gotest
+
+Like go test but with colors.
+
+* Installation
+
+$ go get -u github.com/rakyll/gotest
+
+* Usage
+
+Accepts all the arguments and flags go test works with.
+
+Example:
+
+$ gotest -v github.com/rakyll/hey
+
+gotest
