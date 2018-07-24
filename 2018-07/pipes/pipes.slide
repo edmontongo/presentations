@@ -1,0 +1,55 @@
+What's new in Hugo
+Hugo Pipes
+25 Jun 2018
+Tags: edmontongo, hugo
+
+Edmonton Go
+@edmontongo
+
+https://edmontongo.org
+
+* Hugo
+
+- static site generator
+
+[[https://gohugo.io]]
+
+* Sass
+
+- CSS with superpowers
+- *.scss files
+
+[[https://sass-lang.com]]
+
+* Hugo Pipes
+
+	{{ $styles := resources.Get "sass/all.scss" | toCSS }}
+
+	<link rel="stylesheet" href="{{ $styles.Permalink }}" media="screen">
+
+[[https://gohugo.io/hugo-pipes/]]
+
+
+* Deployment
+
+- [[https://github.com/][GitHub]]
+- [[https://circleci.com/][CircleCI 2.0]]
+- [[https://github.com/bep/s3deploy][s3deploy]]
+
+
+[[https://github.com/nathany/hugo-deploy]]
+
+* Design
+
+- Contrast
+- Repetition
+- Alignment
+- Proximity
+
+
+
+
+
+
+
+
