@@ -1,0 +1,133 @@
+Go modules quick overview
+27 Aug 2018
+Tags: go, v1.11, modules
+
+Peter Preeper
+SysAdmin Developer, AR Thomson Group
+preeper.peter@arthomson.com
+
+
+* Today we will
+
+- Introduce Go modules
+- Work through a quick example
+- See how you can get started using modules
+
+
+* Introduction to Modules
+
+
+* Go 1.11introduces Go modules
+
+- A module is a collection of related Go packages
+- Modules are the unit of source code interchange and versioning
+- The go command has direct support for working with modules
+- Modules replace the old GOPATH-based approach to specifying which source files are used in a given build
+
+    go help modules
+
+
+* Quick Example
+
+
+* Example 1: creating a module
+
+    $ mkdir workspace/padly
+    $ cd workspace/padly
+    $ go mod init github.com/ppreeper/padly
+    go: creating new go.mod: module github.com/ppreeper/padly
+    $ ls
+    go.mod
+    $ cat go.mod
+    module github.com/ppreeper/padly
+
+    $ ls ~/go/pkg
+    dep  linux_amd64
+
+
+* Example 1: adding a dependency
+
+    $ go build
+    go: finding github.com/ppreeper/stringpad v1.0.2
+    go: downloading github.com/ppreeper/stringpad v1.0.2
+
+
+* Example 1: examine dependencies
+
+    $ cat go.mod 
+    module github.com/ppreeper/padly
+
+    require github.com/ppreeper/stringpad v1.0.2
+
+    $ go list -m all
+    github.com/ppreeper/padly
+    github.com/ppreeper/stringpad v1.0.2
+
+    $ ls ~/go/pkg/
+    dep  linux_amd64  mod
+
+
+* Example 1: rebuild
+
+    $ go build
+
+
+* Example 1: downgrading modules
+
+    $ go list -m -versions github.com/ppreeper/stringpad
+    github.com/ppreeper/stringpad v1.0.1 v1.0.2
+
+    $ go get github.com/ppreeper/stringpad@1.0.1
+    go: finding github.com/ppreeper/stringpad 1.0.1
+    go: downloading github.com/ppreeper/stringpad v0.0.0-20180315192221-87297245f19e
+
+    $ go list -m all
+    go: finding github.com/ppreeper/stringpad v0.0.0-20180315192221-87297245f19e
+    github.com/ppreeper/padly
+    github.com/ppreeper/stringpad v0.0.0-20180315192221-87297245f19e
+
+    $ cat go.mod 
+    module github.com/ppreeper/padly
+
+    require github.com/ppreeper/stringpad v0.0.0-20180315192221-87297245f19e
+
+
+* Example 1: upgrading modules
+
+    $ go get github.com/ppreeper/stringpad@1.0.2
+
+    $ go list -m -u all
+    github.com/ppreeper/padly
+    github.com/ppreeper/stringpad v1.0.2
+
+
+* Great: how/where do I get started?
+
+
+* Use Go 1.11
+
+- August 24 Go 1.11 was released
+- Download or install
+- Has module support
+- Work outside GOPATH or set GO111MODULE=on inside GOPATH
+
+    go help modules
+
+
+* Try out modules
+
+- Start new projects using Go modules
+- Convert existing projects
+- Ask questions: golang-nuts, Gophers Slack, Stack Overflow... ([[https://github.com/golang/go/wiki/Questions]])
+- Report Github issues for bugs or (a lack of) docuemtation ([[https://github.com/golang/go/issues/new]])
+- Create experience reports ([[https://github.com/golang/go/wiki/ExperienceReports]])
+
+
+* Caveats
+
+
+* Semantic Versioning
+
+- Semantic Versioning on your projects
+- More than just tags with git
+- Do not forget the "v"
