@@ -11,8 +11,54 @@ https://edmontongo.org
 * Outline
 
 - Fetching
-- Parsing JSON
 - Testing
+- Object-oriented design
+- Parsing JSON
+
+* Dark Sky API
+
+- Documentation [[https://darksky.net/dev/docs]]
+
+
+
+* Building the URL
+
+Build this URL
+
+   https://api.darksky.net/forecast/[key]/[latitude],[longitude]
+
+A location structure
+
+.play -edit 01/url.go /BEGIN/,/END/
+
+A forecast function
+
+.play -edit 01/url.go /BEGINFORECAST/,/ENDFORECAST/
+
+
+* Building the URL
+
+.play -edit 01/url.go
+
+
+* HTTP Get
+
+- http.Get [[https://golang.org/pkg/net/http/#Get]]
+
+.play -edit 02/get.go /BEGINIMPORT/,/ENDIMPORT/
+
+* HTTP Get
+
+.play -edit 02/get.go /BEGINFORECAST/,/ENDFORECAST/
+
+* Testing
+
+- httptest.Server [[https://golang.org/pkg/net/http/httptest/#Server]]
+
+
+* Object-oriented design
+
+* Parsing JSON
 
 
 
