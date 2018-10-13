@@ -1,5 +1,5 @@
 Go for Web Developers
-Workshop One
+Workshop Part I
 15 Oct 2018
 Tags: edmontongo, golang
 
@@ -10,6 +10,8 @@ https://edmontongo.org
 
 * Outline
 
+Today we'll be accessing a weather API with Go.
+
 - Fetching
 - Testing
 - Object-oriented design
@@ -18,8 +20,7 @@ https://edmontongo.org
 * Dark Sky API
 
 - Documentation [[https://darksky.net/dev/docs]]
-
-
+- Register for a free API key [[https://darksky.net/dev/register]]
 
 * Building the URL
 
@@ -51,9 +52,23 @@ A forecast function
 
 .play -edit 02/get.go /BEGINFORECAST/,/ENDFORECAST/
 
-* Testing
+* Automated testing
 
 - httptest.Server [[https://golang.org/pkg/net/http/httptest/#Server]]
+- Let's us start up a test server to mimic the Dark Sky API
+- Provides a base URL in the form `http://ipaddr:port` with no trailing slash
+
+* Exercise 1
+
+In preparation for testing, making the following changes:
+
+- Modify the `Forecast` function to accept and use a `host` parameter
+- Update the call in `main` and manually verify that it works
+
+* HTTP test
+
+.play -edit 03/get_test.go
+
 
 
 * Object-oriented design
