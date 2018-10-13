@@ -16,6 +16,7 @@ Today we'll be accessing a weather API with Go.
 - Testing
 - Object-oriented design
 - Parsing JSON
+- Challenge
 
 * Dark Sky API
 
@@ -60,20 +61,43 @@ A forecast function
 
 * Exercise 1
 
-In preparation for testing, making the following changes:
+- Gist: [[https://yng.mn/darksky-start]]
+
+In preparation for testing, make the following changes:
 
 - Modify the `Forecast` function to accept and use a `host` parameter
-- Update the call in `main` and manually verify that it works
+- Update the call in `main`
+- Use your API key for Dark Sky
+- Manually verify that it works: `go`run`get.go`
 
 * HTTP test
 
 .play -edit 03/get_test.go
 
+- Gist: [[https://yng.mn/darksky-test]]
+- Run `go`test`
 
+* Object-ish oriented design
 
-* Object-oriented design
+.play -edit 04/get.go /BEGIN/,/END/
+
+The tests:
+
+.play -edit 04/get_test.go /BEGIN/,/END/
+
+- Modify your code to be OOPie.
 
 * Parsing JSON
 
+
+
+
+* Challenge
+
+Write a server to provide Edmonton weather in JSON and HTML.
+
+- http.ListenAndServe [[https://golang.org/pkg/net/http/#ListenAndServe]]
+- json.Marshal [[https://golang.org/pkg/encoding/json/#Marshal]]
+- html/template [[https://golang.org/pkg/html/template/]]
 
 
