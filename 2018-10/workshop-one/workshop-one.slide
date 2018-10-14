@@ -59,7 +59,7 @@ A forecast function
 - Let's us start up a test server to mimic the Dark Sky API
 - Provides a base URL in the form `http://ipaddr:port` with no trailing slash
 
-* Exercise 1
+* Exercise
 
 - Gist: [[https://yng.mn/darksky-start]]
 
@@ -85,12 +85,28 @@ The tests:
 
 .play -edit 04/get_test.go /BEGIN/,/END/
 
+Exercise:
+
 - Modify your code to be OOPie.
 
 * Parsing JSON
 
+- json.Unmarshal [[https://golang.org/pkg/encoding/json/#Unmarshal]]
 
+.play -edit 05/parse.go
 
+* Exercise
+
+- Gist: [[https://yng.mn/darksky-json]]
+
+Improve your `Forecast` function:
+
+  func (ds *DarkSky) Forecast(l Location) (*Weather, error)
+
+- Parse the JSON response and return `*Weather`
+- Return errors when `StatusCode` is not `http.StatusOK` using `errors.New` [[https://golang.org/pkg/errors/#New]]
+- Expand tests for return values and error conditions
+- Use `Errorf` [[https://golang.org/pkg/testing/#T.Errorf]]
 
 * Challenge
 
