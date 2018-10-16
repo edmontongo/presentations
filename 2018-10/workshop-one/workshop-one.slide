@@ -1,0 +1,119 @@
+Go for Web Developers
+Workshop Part I
+15 Oct 2018
+Tags: edmontongo, golang
+
+Edmonton Go
+@edmontongo
+
+https://edmontongo.org
+
+* Outline
+
+Today we'll be accessing a weather API with Go.
+
+- Fetching
+- Testing
+- Object-oriented design
+- Parsing JSON
+- Challenge
+
+* Dark Sky API
+
+- Documentation [[https://darksky.net/dev/docs]]
+- Register for a free API key [[https://darksky.net/dev/register]]
+
+* Building the URL
+
+Build this URL
+
+   https://api.darksky.net/forecast/[key]/[latitude],[longitude]
+
+A location structure
+
+.play -edit 01/url.go /BEGIN/,/END/
+
+A forecast function
+
+.play -edit 01/url.go /BEGINFORECAST/,/ENDFORECAST/
+
+
+* Building the URL
+
+.play -edit 01/url.go
+
+
+* HTTP Get
+
+- http.Get [[https://golang.org/pkg/net/http/#Get]]
+
+.play -edit 02/get.go /BEGINIMPORT/,/ENDIMPORT/
+
+* HTTP Get
+
+.play -edit 02/get.go /BEGINFORECAST/,/ENDFORECAST/
+
+* Automated testing
+
+- httptest.Server [[https://golang.org/pkg/net/http/httptest/#Server]]
+- Let's us start up a test server to mimic the Dark Sky API
+- Provides a base URL in the form `http://ipaddr:port` with no trailing slash
+
+* Exercise
+
+- Gist: [[https://yng.mn/darksky-start]]
+
+In preparation for testing, make the following changes:
+
+- Modify the `Forecast` function to accept and use a `host` parameter
+- Update the call in `main`
+- Use your API key for Dark Sky
+- Manually verify that it works: `go`run`get.go`
+
+* HTTP test
+
+.play -edit 03/get_test.go
+
+- Gist: [[https://yng.mn/darksky-test]]
+- Run `go`test`
+
+* Object-ish oriented design
+
+.play -edit 04/get.go /BEGIN/,/END/
+
+The tests:
+
+.play -edit 04/get_test.go /BEGIN/,/END/
+
+Exercise:
+
+- Modify your code to be OOPie.
+
+* Parsing JSON
+
+- json.Unmarshal [[https://golang.org/pkg/encoding/json/#Unmarshal]]
+
+.play -edit 05/parse.go
+
+* Exercise
+
+- Gist: [[https://yng.mn/darksky-json]]
+
+Improve your `Forecast` function:
+
+  func (ds *DarkSky) Forecast(l Location) (*Weather, error)
+
+- Parse the JSON response and return `*Weather`
+- Return errors when `StatusCode` is not `http.StatusOK` using `errors.New` [[https://golang.org/pkg/errors/#New]]
+- Expand tests for return values and error conditions
+- Use `Errorf` [[https://golang.org/pkg/testing/#T.Errorf]]
+
+* Challenge
+
+Write a server to provide Edmonton weather in JSON and HTML.
+
+- http.ListenAndServe [[https://golang.org/pkg/net/http/#ListenAndServe]]
+- json.Marshal [[https://golang.org/pkg/encoding/json/#Marshal]]
+- html/template [[https://golang.org/pkg/html/template/]]
+
+
