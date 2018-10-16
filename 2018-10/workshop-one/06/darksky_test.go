@@ -24,11 +24,11 @@ func TestForecast(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if w.Current.Temperature != expectedTemp {
-		t.Errorf("Expected temperature %f, got %f.", expectedTemp, w.Current.Temperature)
+	if w.Currently.Temperature != expectedTemp {
+		t.Errorf("Expected temperature %f, got %f.", expectedTemp, w.Currently.Temperature)
 	}
-	if w.Current.Summary != expectedSummary {
-		t.Errorf("Expected summary %q, got %q.", expectedSummary, w.Current.Summary)
+	if w.Currently.Summary != expectedSummary {
+		t.Errorf("Expected summary %q, got %q.", expectedSummary, w.Currently.Summary)
 	}
 }
 

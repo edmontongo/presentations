@@ -17,10 +17,10 @@ type DarkSky struct {
 }
 
 type Weather struct {
-	Current Current `json:"currently"`
+	Currently Currently `json:"currently"`
 }
 
-type Current struct {
+type Currently struct {
 	Summary     string  `json:"summary"`
 	Temperature float64 `json:"temperature"`
 }
