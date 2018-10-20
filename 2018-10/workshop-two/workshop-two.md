@@ -40,7 +40,27 @@ Can use libraries such as Gin, to allow for livereloading
 
 1. https://github.com/codegangsta/gin
 
+```bash
+go get github.com/codegangsta/gin
+```
+
 ---
+
+# Hello World
+
+* https://golang.org/dl/
+* https://golang.org/doc/install
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+    fmt.Println("Hello, World")
+}
+```
+
 
 # Flags
 
@@ -52,20 +72,23 @@ Can use libraries such as Gin, to allow for livereloading
 import "flag"
 
 func main() {
-    var secret string
-    flag.StringVar(&secret, "secret", "", "DarkSky API key")
+    var someVal string
+    flag.StringVar(&someVal, "someval", "", "some config value")
     flag.Parse()
 }
 ```
 
 ---
 
-# Exercise 
+# Secrets 
+
+Add the following code
+
 ```go
 func main() {
     var secret string
     flag.StringVar(&secret, "secret", "", "DarkSky API key (required)")
-    port := flag.String("port", "3001", "Port service s listening on")
+    port := flag.String("port", "3001", "Port service will listen on")
     flag.Parse()
 
     // if you want to use Gin
@@ -76,6 +99,7 @@ func main() {
         flag.PrintDefaults()
         os.Exit(1)
     }
+    fmt.Printf("Listening on :%s\n", *port)
 }
 ```
 
@@ -83,11 +107,11 @@ func main() {
 
 ### Test it
 ```bash
-go run main.go # should fail
+go run . # should fail
 ```
 
 ```bash
-go run main.go -secret foo 
+go run . -secret=foo 
 ```
 
 ---
@@ -105,14 +129,27 @@ func main() {
     http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
         // handle request
     })
-    http.Handle("/foo", someHandler)
-    http.ListenAndServe(":3000", nil)
+    http.Handle("/foo", someHandler)  
+    if err := http.ListenAndServe(":3000", nil); err != nil {
+        fmt.Printf("failed to start server: %v", err)
+        os.Exit(1)
+    }
 }
 ```
 
 ---
 
-# Exercise
+# Handlers
+
+## What is a Handler?
+* It's a Go interface that requires the type to have a `ServeHTTP(w, r)` method
+
+## Why use it?
+* Makes it easier to inject dependencies
+
+---
+
+# Listen and Serve 
 
 ```go
 type locationHandler struct { }
@@ -125,12 +162,15 @@ func main() {
     //...
     locationHandler := locationHandler{}
     http.Handle("/", locationHandler)
-    http.ListenAndServe(":3000", nil)
+    if err := http.ListenAndServe(":"+*port, nil); err != nil {
+        fmt.Printf("failed to start server: %v", err)
+        os.Exit(1)
+    }
 }
 ```
 
 ```bash
-go run main.go -secret=abc123 # secret=abc123 gin main.go
+go run . -secret=abc123 # secret=abc123 gin .
 ```
 
 ---
@@ -154,7 +194,7 @@ if err != nil {
 
 ## Exercise
 
-Parse out the longitude value
+Parse out the longitude value as well, then test it via the browser
 
 ---
 
@@ -207,7 +247,11 @@ case "application/json":
 
 ---
 
-# JSON Marshalling
+# JSON Marshaling
+
+```go
+import "encoding/json"
+```
 
 ```go
 b, err := json.Marshal(weather)
@@ -234,10 +278,8 @@ t, err := template.New("app.html").
         "templates/app.html",
         "views/location.html",
     )
-if err != nil { return }  // handle the error
-if err = t.Execute(w, weather); err != nil {
-    http.Error(w, "render failed", http.StatusInternalServerError) 
-}
+if err != nil { return }  // handle these errors
+if err = t.Execute(w, weather); err != nil { return }
 ```
 
 ---
@@ -248,6 +290,7 @@ Add the HTML rendering code
 <!-- templates/app.html -->
 <!DOCTYPE html>
 <html lang="en">
+<head><meta charset="UTF-8"></head>
 <body>
 {{block "content" .}}
     This text will render if no `content` block is defined
@@ -258,7 +301,8 @@ Add the HTML rendering code
 ```html
 <!-- views/location.html -->
 {{define "content"}}
-<div>{{.CurrentWeather.Temperature | toCelsius}}</div>
+<h1>{{.Currently.Summary}}</h1>
+<div>{{.Currently.Temperature | toCelsius}}</div>
 {{end}}
 ```
 
@@ -275,13 +319,12 @@ Add the HTML rendering code
 # Use Interfaces 
 
 ```go
-// locationhandler.go
 type forecaster interface {
     Forecast(darksky.Location) (*darksky.Weather, error)
 }
 
 type locationHandler struct {
-    forecastSvc forecaster
+    forecastSvc forecaster  // add this line to existing handler
 }
 
 func newLocationHandler(f forecaster) locationHandler {
@@ -291,8 +334,9 @@ func newLocationHandler(f forecaster) locationHandler {
 
 ```go
 // main.go
-forecastSvc := darksky.New(secret)
-locationHandler := newLocationHandler(forecastSvc)
+// remove global service
+darkskySvc := darksky.New(secret)
+locationHandler := newLocationHandler(darkskySvc)
 ```
 
 ---
@@ -301,6 +345,7 @@ locationHandler := newLocationHandler(forecastSvc)
 
 ## Mocks
 ```go
+// main_test.go
 type forecasterMock struct {
     weather *darksky.Weather
     err     error
@@ -316,7 +361,7 @@ func (f forecasterMock) Forecast(darksky.Location) (*darksky.Weather, error) {
 ## Tests
 
 ```go
-func TestLocationHandlerHTMLResponse(t *testing.T) {
+func TestHTMLResponse(t *testing.T) {
     forecastMock := forecasterMock{
         weather: &darksky.Weather{
             Currently: darksky.Currently{
