@@ -61,6 +61,7 @@ func main() {
 }
 ```
 
+---
 
 # Flags
 
@@ -201,7 +202,6 @@ Parse out the longitude value as well, then test it via the browser
 # Get the weather 
 
 ```go
-// main.go
 var darkskySvc *darksky.DarkSky
 func main() {
     // ...
@@ -211,7 +211,6 @@ func main() {
 ```
 
 ```go
-// locationhandler.go
 import "github.com/edmontongo/darksky"
 func (lh locationHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     //...
@@ -333,7 +332,6 @@ func newLocationHandler(f forecaster) locationHandler {
 ```
 
 ```go
-// main.go
 // remove global service
 darkskySvc := darksky.New(secret)
 locationHandler := newLocationHandler(darkskySvc)
