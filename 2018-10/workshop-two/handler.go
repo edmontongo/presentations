@@ -8,10 +8,6 @@ import (
 	"strings"
 )
 
-// type templateCacher interface {
-// 	get(viewPaths []string, helpers template.FuncMap) (*template.Template, error)
-// }
-
 type handler struct {
 	viewPaths []string
 	helpers   template.FuncMap
