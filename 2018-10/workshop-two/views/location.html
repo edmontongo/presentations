@@ -1,0 +1,22 @@
+{{ define "content"}}
+<p>
+    {{ with .Currently}}
+        {{if gt .Temperature 80.0 }}
+            <p>It's hot!</p>
+        {{else}}{{if gt .Temperature 60.0}}
+            <p>It's nice out</p>
+        {{else}}{{if gt .Temperature 40.0}}
+            <p>It's chilly</p>
+        {{else}}
+            <p>It's cold :(</p>
+        {{end}}
+        {{end}}
+        {{end}}
+
+        <h1>{{ .Temperature | toCelsius }}</h1>
+        <p>
+            {{ .Summary }}
+        </p>
+    {{end}}
+</p>
+{{end}}

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Go Workshop II</title>
+</head>
+<body>
+    <header id="app-header">
+        <h1>What's the Weather?</h1>
+    </header>
+
+    {{block "content" .}}
+        This text will render if no `content` block is defined
+    {{end}}
+
+    <footer id="app-footer">
+        &copy; 2018 What's the Weather Inc.
+    </footer>
+</body>
+</html>
