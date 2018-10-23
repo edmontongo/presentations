@@ -1,0 +1,239 @@
+Go for Web Developers
+Workshop Part II
+22 Oct 2018
+Tags: edmontongo, golang
+
+Edmonton Go
+@edmontongo
+
+https://edmontongo.org
+
+* Workshop I Review
+
+Created library that wraps the DarkSky weather API
+
+- Darksky Signup https://darksky.net/dev/register
+- HTTP GET request
+- JSON decoding 
+- Testing
+
+
+* Workshop II Outline
+
+Create a web API for our previously created library
+
+- Using flags to configure app
+- http.Handler and http.HandlerFunc
+- JSON encoding 
+- HMTL Rendering
+- Interfaces
+- Refactoring
+- Add tests for our API
+
+
+* Hello World
+
+: Code it
+
+- https://golang.org/dl/
+- https://golang.org/doc/install
+
+main.go
+.play slides/01/main.go
+
+    go run .
+
+
+* Flags
+
+- Go accepted way of configuration
+- Allows for default values
+- Provides documentation `./myapp -help`
+
+
+.code slides/02/main.go 
+
+
+* Secrets 
+
+: Code it
+
+Add the following code
+
+.play -numbers slides/03/main.go /start/,/end/
+
+
+
+* Test it
+
+    go run . # should fail
+
+    go run . -secret=foo 
+
+
+
+* Web API Basics
+
+.code slides/04/main.go 
+
+
+* Handlers
+
+What is a Handler?
+
+- It's a Go interface that requires the type to have a `ServeHTTP(w, r)` method
+
+Why use it?
+
+- Makes it easier to inject dependencies
+
+    type someHandler struct {
+        someSvc *someSvc
+    }
+
+    func (sh someHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+        // handle request
+    }
+
+
+* Create Service
+
+    go get github.com/edmontongo/darksky
+
+: Code it
+: Global variable...for now
+
+.play slides/05/main.go /svcstart/,/svcend/
+
+
+* Handle Request
+
+main.go
+.play slides/05/main.go /starthandle/,/endhandle/
+
+* Test it
+
+    go run . -secret=abc123 
+
+
+* Weather (aka Location) Handler
+
+.link http://localhost:3000?lat=53.5&lng=-113.3
+
+
+
+* Querystring params
+
+: Code it
+
+ServeHTTP()
+.code main.go /latstart/,/latend/
+
+and the same for the longitude value
+
+Pass value to service
+
+.code slides/06/main.go 
+
+
+* Content-Type 
+
+: Code it
+
+Determine the content types accepted by the client
+
+main.go
+
+    // weather, err := ...
+    accept := r.Header.Get("Accept")
+    contentType := "application/json"
+    if strings.Contains(accept, "text/html") {
+        contentType = "text/html"
+    }
+    w.Header().Add("Content-Type", contentType)
+
+    switch contentType {
+    case "text/html":
+        // render html here
+    case "application/json":
+        // return json
+    }
+
+
+* JSON Marshaling
+
+: Code it
+
+    import "encoding/json"
+
+.code main.go /jsonmarshalstart/,/jsonmarshalend/
+
+* HMTL templates
+
+: Code it
+
+    import "text/html"
+
+.code main.go /htmlstart/,/htmlend/
+
+* HTML Layout 
+
+templates/app.html
+
+: Code it
+
+.code templates/app.html
+
+
+* HTML View 
+
+: Code it
+
+    type Weather struct {
+        Currently Currently `json:"currently"`
+    }
+
+    type Currently struct {
+        Summary     string  `json:"summary"`
+        Temperature float64 `json:"temperature"`
+    }
+
+views/location.html
+
+.code views/location.html
+
+.play main.go /runme start/,/runme end/
+
+
+* Refactor
+
+1. Remove global darkskySvc
+2. Cache templates (won't cover this, but checkout the code)
+.link ./slides/final/templatecache.go
+
+
+* Interfaces FTW
+
+: Code it
+
+main.go
+.code main.go /interface start/,/interface end/ 
+
+main.go
+.play main.go /interface svc start/,/interface svc end/
+
+
+* Testing with API Mock
+
+: Code it
+
+main_test.go
+.code main_test.go /mock start/,/mock end/
+
+
+* API Tests
+
+: Code it
+
+main_test.go
+.code main_test.go /test html start/,/test html end/ 
