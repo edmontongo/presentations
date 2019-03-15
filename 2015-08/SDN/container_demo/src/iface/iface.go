@@ -59,7 +59,7 @@ func SetAddr(iface string, cidr string) {
 	}
 }
 
-/* Return true if @iface name exists */
+/* Exists returns true if @iface name exists */
 func Exists(iface string) bool {
 	_, err := netlink.LinkByName(iface)
 	return err == nil
