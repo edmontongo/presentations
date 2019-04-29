@@ -1,0 +1,353 @@
+<!doctype html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+	<title>Go and Docker</title>
+
+	<link rel="stylesheet" href="css/reset.css">
+	<link rel="stylesheet" href="css/reveal.css">
+	<link rel="stylesheet" href="css/theme/black.css">
+
+	<!-- Theme used for syntax highlighting of code -->
+	<link rel="stylesheet" href="lib/css/monokai.css">
+
+	<!-- Printing and PDF exports -->
+	<script>
+		var link = document.createElement('link');
+		link.rel = 'stylesheet';
+		link.type = 'text/css';
+		link.href = window.location.search.match(/print-pdf/gi) ? 'css/print/pdf.css' : 'css/print/paper.css';
+		document.getElementsByTagName('head')[0].appendChild(link);
+	</script>
+</head>
+
+<body>
+<div class="reveal">
+<div class="slides">
+<section>
+
+<h1>Go and Docker</h1>
+<p>22 April 2019<br/>
+Peter Preeper<br/>
+SysAdmin Developer, AR Thomson Group<br/>
+preeper.peter@arthomson.com</p>
+
+</section>
+<section>
+<h4>Go</h4>
+
+Go (often referred to as Golang):
+
+<ul>
+	<li>statically typed</li>
+	<li>compiled programming language</li>
+	<li>with memory safety</li>
+	<li>garbage collection</li>
+	<li>structural typing</li>
+	<li>CSP-style concurrency</li>
+	<li>one binary produced</li>
+</ul>
+</section>
+<section>
+<h4>docker</h4>
+
+Docker performs operating-system-level virtualization also known as containerization.
+
+<img src="docker-layers.png" alt="">
+
+</section>
+<section>
+<h4>docker advantages</h4>
+<ul>
+		<li>split up application into distinct units</li>
+		<li>refocus on the data not specific configuration</li>
+		<li>thinner images than vms</li>
+		<li>common app images available @ hub.docker.com</li>
+</ul>
+</section>
+<section>
+<h4>docker sizes</h4>
+Generally smaller but can be much larger.
+<br>some sizes (As of 2019-04-15)
+<table>
+	<thead>
+		<td>REPOSITORY</td>
+		<td>TAG</td>
+		<td>IMAGE ID</td>
+		<td>CREATED</td>
+		<td>SIZE</td>
+	</thead>
+	<tbody>
+		<tr>
+			<td>alpine</td>
+			<td>latest</td>
+			<td>cdf98d1859c1</td>
+			<td>5 days ago</td>
+			<td>5.53MB</td>
+		</tr>
+		<tr>
+			<td>debian</td>
+			<td>latest</td>
+			<td>2d337f242f07</td>
+			<td>2 weeks ago</td>
+			<td>101MB</td>
+		</tr>
+	</tbody>
+</table>
+
+</section>
+<section>
+
+<h4>the app</h4>
+
+<pre><code class="hljs">func main() {
+	resp, err := http.Get("https://edmontongo.org")
+	check(err)
+	body, err := ioutil.ReadAll(resp.Body)
+	check(err)
+	fmt.Println(len(body))
+}
+
+func check(err error) {
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+}</code></pre>
+
+</section>
+<section>
+
+<h4>common strategy golang:onbuild</h4>
+
+Dockerfile:
+<pre><code class="hljs">FROM golang:onbuild</code></pre>
+
+
+Build container:
+<pre><code class="hljs">docker build -t godocker-onbuild -f Dockerfile.onbuild .</code></pre>
+
+
+Running the container:
+<pre><code class="hljs">docker run -it godocker-onbuild</code></pre>
+
+</section>
+<section>
+
+<h4>golang:onbuild</h4>
+
+Advantages<br/>
+<ul>
+	<li>Developers can get up-and-running in a very short amount of time</li>
+	<li>Little Docker knowledge needed to start ‘Dockerizing’</li>
+	<li>Good for creating derivative images</li>
+</ul>
+
+Disadvantages<br/>
+<ul>
+	<li>Lacks control over the image building process</li>
+	<li>Images are large. As you make more images drive space can dwindle quickly</li>
+</ul>
+</section>
+<section>
+
+<h4>common strategy golang:version/latest</h4> 
+
+Dockerfile: 
+<pre><code class="hljs">FROM golang:latest
+RUN mkdir /app
+ADD . /app/.
+WORKDIR /app
+RUN go build -o main .
+CMD ["/app/main"]</code></pre>
+
+Build container:
+<pre><code class="hljs">docker build -t godocker-latest -f Dockerfile.latest .</code></pre>
+
+Running the container:
+<pre><code class="hljs">docker run -it godocker-latest </code></pre>
+
+</section>
+<section>
+
+<h4>golang:version/latest</h4>
+
+Advantages<br/>
+<ul>
+	<li>Control over the build order of the image</li>
+	<li>Don’t need to manually install Go</li>
+</ul>
+
+Disadvantages<br/>
+<ul>
+	<li>Images like golang:version have many layers to them</li>
+	<li>More lines of code involved in writing our dockerfile</li>
+</ul>
+
+</section>
+<section>
+
+<h4>How to make smaller images?</h4>
+
+<svg width="100%" height="100%" viewBox="0 0 400 400">
+<rect x="0" y="0" width="100%" height="100%" fill="none"/>
+<text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="250">
+&#x2753;	
+</text>
+</svg>
+
+</section>
+<section>
+
+<h4>scratch</h4>
+
+an explicitly empty image, especially for building images “FROM scratch”
+
+<pre><code class="hljs">FROM scratch</code></pre>
+
+<br>Useful in building base images (such as debian and busybox) or super minimal images (that contain
+only a single binary and whatever it requires, such as hello-world).
+
+<br>As of Docker 1.5.0, FROM scratch is a no-op in the Dockerfile, and will not create an extra layer in
+your image (so a previously 2-layer image will be a 1-layer image instead).
+
+</section>
+<section>
+
+<h4>building golang container with scratch</h4>
+
+Build requires two steps:
+<ul>
+	<li>build binary</li>
+	<li>installation of binary into container</li>
+</ul>
+
+Dockerfile:
+<pre><code class="hljs">FROM scratch
+COPY main /
+CMD ["/main"]</code></pre>
+
+Build container:
+<pre><code class="hljs">go build -o main .
+docker build -t godocker-scratch -f Dockerfile.scratch .</code></pre>
+
+Running the container:
+<pre><code class="hljs">docker run -it godocker-scratch</code></pre>
+
+</section>
+<section>
+
+<h4>What went wrong?</h4>
+
+<svg width="100%" height="100%" viewBox="0 0 400 400">
+<rect x="0" y="0" width="100%" height="100%" fill="none"/>
+<text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="250">
+&#x1F525;	
+</text>
+</svg>
+
+</section>
+<section>
+
+<h4>static linking the binary</h4>
+
+Dockerfile:
+<pre><code class="hljs">FROM scratch
+COPY main /
+CMD ["/main"]</code></pre>
+
+Build container:
+<pre><code class="hljs">CGO_ENABLED=0 GOOS=linux go build -a -o main .
+docker build -t godocker-static -f Dockerfile.scratch .
+</code></pre>
+
+Running the container:
+<pre><code class="hljs">docker run -it godocker-static</code></pre>
+
+</section>
+<section>
+
+<h4>What is this error?</h4>
+
+<svg width="100%" height="100%" viewBox="0 0 400 400">
+<rect x="0" y="0" width="100%" height="100%" fill="none"/>
+<text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="250">
+&#x1F914;
+</text>
+</svg>
+
+</section>
+<section>
+
+<h4>copy all the files needed</h4>
+
+Dockerfile:
+<pre><code class="hljs">FROM scratch
+COPY ca-certificates.crt /etc/ssl/certs/
+COPY main /
+CMD ["/main"]</code></pre>
+
+Build container:
+<pre><code class="hljs">
+CGO_ENABLED=0 GOOS=linux go build -a -o main .
+docker build -t godocker-staticssl -f Dockerfile.scratchssl .
+</code></pre>
+
+Running the container:
+<pre><code class="hljs">docker run -it godocker-staticssl</code></pre>
+
+</section>
+<section>
+
+<h4>Take aways</h4>
+<ul>
+<li>use "scratch" to build tiny images</li>
+<li>use static linking to bring over the go libraries</li>
+<li>have fun building your micro-containers for your micro-services</li>
+</ul>
+
+</section>
+<section>
+<h4>Thank You</h4>
+
+<svg width="100%" height="100%" viewBox="0 0 400 400">
+<rect x="0" y="0" width="100%" height="100%" fill="none"/>
+<text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="250">
+&#x1F916;
+</text>
+</svg>
+
+</section>
+</div>
+</div>
+
+<script src="js/reveal.js"></script>
+
+<script>
+	// More info about config & dependencies:
+	// - https://github.com/hakimel/reveal.js#configuration
+	// - https://github.com/hakimel/reveal.js#dependencies
+	Reveal.initialize({
+		dependencies: [{
+				src: 'plugin/markdown/marked.js'
+			},
+			{
+				src: 'plugin/markdown/markdown.js'
+			},
+			{
+				src: 'plugin/notes/notes.js',
+				async: true
+			},
+			{
+				src: 'plugin/highlight/highlight.js',
+				async: true
+			}
+		]
+	});
+</script>
+</body>
+
+</html>
