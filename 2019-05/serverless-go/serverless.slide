@@ -1,0 +1,88 @@
+Go Func Yourself
+A brief introduction to serverless Golang
+23 May 2019
+Tags: edmontongo, golang
+
+Matthias Stone
+CTO, Bellstone Engineering
+matthias@bellstone.ca
+
+
+* My knowledge level
+
+# Pretty new to this
+
+* What is Serverless computing?
+
+- A business logic only approach to cloud computing
+- Applications are deployed as individual endpoints
+- There is no management of individual servers or services
+- There are still servers ;)
+
+* How is it referred to?
+
+- FaaS - Functions as a Service
+- Often called "Cloud Functions"
+- AWS Lambda is the Amazon branded product
+
+* Who provides Serverless Computing?
+
+- [[https://aws.amazon.com/lambda/features/][Amazon Web Services]]
+- [[https://aws.amazon.com/lambda/features/][Google Cloud Platform]]
+- Others ([[https://azure.microsoft.com/en-ca/services/functions/?&OCID=AID719803_SEM_xza3cZ8p&lnkd=Google_Azure_Brand&dclid=CjgKEAjwla7nBRDzot-dl-S_qXQSJAATzaQ0kOnx-6TE-JetkNoIdLwT3gkIIABW4_sIOYJ5kI0xa_D_BwE][Azure]], etc.)
+- Do it your self [[https://www.openfaas.com/][OpenFaaS]]
+
+* Why Serverless Computing?
+
+- Scales awesome
+- Forces stateless design
+- Low Maintenance
+- Cheap
+- Low knowledge/expertise level required
+
+* What does it do?
+
+- HTTP Handler or various forms of background functions
+- Middleware can be configured in front of the application for logging, authentication, etc.
+
+* Deploying Serverless functions
+
+- Web Consoles
+- CLI tools
+- Continuous Integration (CI)
+
+* Neat Applications
+
+- Doing something small
+- Triggered by events on the Cloud Provider's platform
+- Built in auto-scaling
+
+* AWS Lambda
+
+- Handles request parsing
+- More integrations
+- Large, Connected Ecosystem
+
+* AWS Lambda
+
+.code aws.go
+
+* Google Cloud Platform
+
+- Idiomatic Go handlers
+- Fewer features -> Simpler interface
+- Stands alone as a service
+- Deploy from source repository
+
+* GCloud Example
+
+.code gcloud.go
+
+* Complications
+
+- Cool vs. Warm starts
+- Logging is often per function instance, and needs to be collected
+- BYO Ops if you need to coordinate your team (Platforms make no assumptions about your project)
+- No handholding to run offline
+
+* Questions?
