@@ -38,7 +38,7 @@ func List(ifs ...string) {
         }
 }
 
-/* Check if route @src -> @dst exists with the same destination netmask as @r */
+/* Exists checks if route @src -> @dst exists with the same destination netmask as @r */
 func Exists(r *netlink.Route) bool {
 	/* FIXME: see bug of RouteList mentioned in above List() command */
 	routes, err := netlink.RouteList(nil, 0)
