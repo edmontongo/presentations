@@ -1,0 +1,505 @@
+Functional Go
+How Well Does Go Support Functional Programming?
+25 Mar 2019
+
+Axel von Bertoldi
+Senior Software Developer, Kira Systems
+bertoldia@gmail.com
+http://kirasystems.com/
+
+
+* Disclaimer
+I am not a Functional Programming Guru!
+
+But I have used FP in personal and work projects
+
+Currently use Go at work
+
+
+* Context
+This talk will _NOT_
+- Be an intro to FP
+- Be theory-heavy, or talk about thinks like type-classes, category theory or Kleisli arrow
+- Evangelize FP
+
+This talk _is_:
+
+- A practical look at FP concepts...
+- If and how they can be applied in Go ...
+- If not, what's missing from Go that prevents it.
+
+*Note:* _There_will_be_code!_
+
+
+
+* Why Functional Programming?
+.image functional.png
+
+
+* Why Functional Programming?
+.image coursera-fp.png 600 800
+
+
+* Why Functional Programming?
+- Safety (especially with concurrency)
+- Easier to test
+- Easier to reason about
+- Facilitates code reuse
+- Conciseness
+- Some types of computation are better-expressed in FP
+- Generally yields a higher level of abstraction
+
+
+* Why Not Functional Programming?
+- Performance (if language or libraries don't support FP idioms)
+- Unfamiliar to some developers
+- Some types of computation are better expressed procedurally (or via OOP, or some other paradigm)
+
+
+* What is Functional Programming?
+FP Pillars
+
+- Immutable variables (including sequence containers)
+- Referential transparency (no side effects)
+- First class functions (including closures)
+
+Related Concepts
+
+- Tail Recursion
+- Higher order functions (filter,map,reduce,count,take,...)
+- Monads
+- Pattern Matching ✘
+- Currying & Partial Application ✘
+- Algebraic types (a.k.a. sum/union types) ✘
+
+
+* Overview
+- Concept Overview
+- Explore how well Go supports it
+- Examples (with mostly real, runnable code)
+- If not supported, might a future version of Go support it?
+Score:
+
+- *A* - Supports use of concept
+- *B/C* - Neither supports nor prevents use of concept
+- *F* - Prevents use of concept
+
+
+* Immutable Variables
+.image immutable.png
+
+* Immutable Variables
+What is immutability?
+
+- Immutable types (e.g. can't upper-case a string in place)
+- Cannot modify elements of struct/class (like `final` in Java)
+- Cannot re-bind variables
+- Also applies to sequence containers (array, list, set, map, etc.):
+- Adding to/removing from the sequence results in a new sequence (or new view of the sequence)
+- Cannot modify elements of sequence
+
+
+* Immutable Variables
+Does Go support it?
+
+- `strings` are immutable ✔ 
+
+    a := "ABC"; b := a
+    a = strings.ToUpper(a)
+    fmt.Println(a, b) // ABC abc
+    a[0] = rune('X')  // cannot assign to a[0]
+
+- `const` ✔ 
+
+    const foo int = 42
+    foo++ // cannot assign to foo
+    const bar string = "life, the universe"
+    bar += ", and everything." // cannot assign to foo
+
+- Slices are not modifiable * ✔ 
+
+    a := []int{1, 2, 3}; b := a
+    a := append(a, 4, 5, 6)
+    a := a[3:6]
+    fmt.Println(b, a) // [1 2 3] [4 5 6] 
+
+
+* Immutable Variables
+- Can only apply `const` to numbers, booleans and strings ✘
+
+    const bla []int = make([]int, 3)
+    // const initializer make([]int, 3) is not a constant
+
+    const bla = [...]int{"foo", "bar", "baz"}
+    // const initializer [3]int literal is not a constant
+
+    type Foo struct{...}
+    const f = Foo{}
+    // const initializer Foo literal is not a constant
+
+- Can modify container elements and struct members. ✘
+
+    a := []int{1,2,3,4}
+    a[0] = 42 // this is fine
+
+- Cannot make struct members `final` ✘
+
+
+* Immutable Variables
+Score: *B-*
+
+- Immutable strings and slices ✔
+- `const` only for `number`, `bool` and `string` ✔
+- Collection contents are modifiable ✘
+- Does not prevent immutable variables by convention ✘
+
+But there's hope!
+.link https://github.com/golang/go/issues/27975 proposal: Go 2: immutable type qualifier #27975 
+
+
+* Referential Transparency
+.image putin.jpg
+
+
+* Referential Transparency
+What is it?
+.caption A function can be replaced with the result of its evaluation.
+
+Implications:
+
+- Functions _do_not_ have side-effects, they only return values
+- A function's output does not depend on global state; only its inputs.
+- A function does not modify global state
+- A function does not modify its input(s)
+
+All of the above also means functions _must_ return some vaule, otherwise
+there's no reason for it to exists.
+
+
+* Referential Transparency
+Does Go support it?
+
+- Allows global state via package-level variables ✘
+    package foo
+    type Foo struct { Bar string }
+    var DefaultFoo Foo{ Bar: "Baz" }
+
+    ... // later, in some other package...
+    foo.DefaultFoo.Bar = "this is allowed" // accessing global state!
+- Allows modification of function arguments ✘
+
+    func BabyDidABadBadThing (foo *Foo) {
+        foo.Bar = "this is allowed"
+    }
+- Many stdlib packages (like `sort`) operate in place ✘
+    s := []string{"Go", "Bravo", "Gopher", "Alpha", "Grin", "Delta"}
+    sort.Strings(s) // in place sort
+
+
+* Referential Transparency
+Score: *C*
+
+- Does not prevent referential transparency by convention ✘
+- Language facilitates and stdlib perpetrates violation of referential transparency ✘
+
+Unlikely to change in future versions.
+
+
+* First Class Functions
+.image first_class.jpg
+
+
+* First Class Functions
+What are they?
+
+- Anonymous functions
+- Functions accept functions as arguments
+- Functions return functions
+- Function closures
+
+
+* First Class Functions
+.play -edit functions.go /START OMIT/,/END OMIT/
+But is this practical?
+
+
+* First Class Functions
+[[https://dave.cheney.net/2014/10/17/functional-options-for-friendly-apis][Functional Options]]
+.play func_opts.go /START OMIT/,/END OMIT/
+
+
+* First Class Functions
+Score: *A*
+
+
+* Tail Recursion
+.image recursion.png
+
+
+* Tail Recursion
+What is it?
+
+Tail call:
+.caption When the last executed statement in a function is a call to another function.
+
+    func bar() int {
+        ...
+        return foo()
+    }
+
+Tail recursion:
+.caption When the last executed statement in a function is a call to itself.
+
+    func bar() int {
+        ...
+        return bar()
+    }
+
+
+* Tail Recursion
+What is it?
+
+Tail call optimization:
+.caption When making a tail call, the called (second) function reuses the first function's stack frame.
+
+Recursion + tail call optimization:
+.caption When a recursive function's last statement is a call to itself, the stack frame is reused for each call.
+
+When supported by the runtime/compiler, tail recursion results in constant stack
+space for tail recursive functions, regardless of the depth of recursion.
+
+But tail-recursion is not automatic/free for any recursive function...
+
+
+* Tail Recursion
+.play -edit recursion.go /START OMIT/,/END OMIT/
+
+_Not_ tail recursive ✘
+
+
+* Tail Recursion
+.play -edit tail_recursion.go /START OMIT/,/END OMIT/
+
+Tail recursive ✔
+
+
+* Tail Recursion
+So, does Go support tail call optimization?
+
+[[https://github.com/golang/go/issues/22624]]
+.caption We should only make changes to the language that address an important issue for many people. While this idea is interesting, it doesn't address a significant problem that people have using the language. So we are not going to do it.
+
+[[https://groups.google.com/forum/#!msg/golang-nuts/0oIZPHhrDzY/2nCpUZDKZAAJ]]
+.caption It is already there in 6g/8g for certain cases, and in gccgo somewhat more generally. We do not currently plan to change the language to require that compilers implement tail call optimization in all cases. If you must have a tail call, you use a loop or a goto statement.
+
+
+.image https://i.stack.imgur.com/J35W4.png
+
+
+* Tail Recursion
+So, does Go support tail call optimization?
+.play -edit recursion_explode.go /START OMIT/,/END OMIT/,
+
+
+* Tail Recursion
+Score: *F* - Go does not support tail call optimization, but...
+Channels to the rescue!
+.play -edit recursion_chan.go /START OMIT/,/END OMIT/
+_Do_not_do_this_at_work_ ✘✘✘
+
+
+* Higher-Order Functions
+.image higher_order.jpg
+
+
+* Higher-Order Functions
+What are they?
+
+- A HOF takes a collection and a function, and applies the function to each element of the collection, returning a modified collection (or subset of the collection, including a single element)
+- Separates the iteration from the operation being performed
+- HOFs can be chained together to create a pipeline of modifications to a collection
+- The details of iterating over the collection are hidden from the caller
+- Allows for lazy evaluation and parallel iteration
+
+Common HOFs
+
+- map, filter, reduce, fold, chain, take...
+
+
+* Higher-Order Functions - Map
+.play map.go /START OMIT/,/END OMIT/
+
+
+* Higher-Order Functions - Filter
+.play filter.go /START OMIT/,/END OMIT/
+
+
+* Higher-Order Functions - Reduce
+.play -edit reduce.go /START OMIT/,/END OMIT/
+
+
+* Higher-Order Functions - Composition
+.play hof.go /START OMIT/,/END OMIT/
+
+
+* Higher-Order Functions - As Streams
+.code streams.go /START1 OMIT/,/END1 OMIT/
+
+
+* Higher-Order Functions - As Streams
+.play streams.go /START2 OMIT/,/END2 OMIT/
+
+Imperative equivalent
+.play hof_not.go /START OMIT/,/END OMIT/
+
+
+* Higher-Order Functions
+Cool, but...
+
+    type T int
+    type Sequence []T
+
+Need generic (not _Generics_ ) HOF implementations!
+
+- [[https://github.com/yanatan16/itertools]]
+.caption All iterators are chan interface{}
+- [[https://github.com/robpike/filter]]
+.caption Having written it a couple of years ago, I haven't had occasion to use
+.caption it once. Instead, I just use "for" loops. You shouldn't use it either.
+
+Problems with these implementations:
+
+- Eager evaluation ✘
+- Types! type-specific or rely on `interface{}` ✘
+
+
+* Higher-Order Functions
+Score: *F* - Requires parametric polymorphism (a.k.a. Generics) to make this _practical_.
+
+
+* Monad
+.image monad1.jpg
+
+
+* Monad
+What is it?
+.caption  A monad is just a monoid in the category of endofunctors, what's the problem?
+.image monad2.jpg
+
+
+* Monad
+A Monad is:
+
+- A kind of type 
+- That wraps/decorates another type
+ MyMonad<T>
+- Implements `bind` or `flatMap` method
+ func (Monad<A>) Bind(func(A)Monad<B>) Monad<B>
+
+This name of this function does not matter (a.k.a. `Apply`, `Then`); its functionality does.
+
+Common Monads
+
+ Optional<T>: A value of type T or nil
+ Maybe<T>:    A value of type T or an error
+ Try<T>:      A value of type T or an Exception
+ Future<T>:   An async computation that will eventually yield a value of type T*
+
+
+* Monads
+Example: The _Maybe_ Monad
+
+    type Maybe<T> struct {
+        Success T
+        Error error
+    }
+
+    func <T>ForSuccess(result T) Maybe<T> {
+        return Maybe{ Success: result, Error: nil }
+    }
+
+    func <T>ForError(err error) Maybe<T> {
+        return Maybe{ Success: nil, Error: err }
+    }
+
+    func (m Maybe<T>) Apply(f func(a T) Maybe<U> ) Maybe<U> {
+        if m.Error != nil {
+            return ForError<U>(m.Error)
+        }
+        return f(m.Success)
+    }
+
+
+* Monads
+So what?
+
+    func fA()  (A, error) {...}
+    func fB(A) (B, error) {...}
+    func fC(B) (C, error) {...}
+
+    ... 
+    func doThings(foo someType) (someOtherType, error) {
+        a, err := fA()
+        if err != nil {
+            return nil, err
+        }
+        b, err := fB(a)
+        if err != nil {
+            return nil, err
+        }
+        c, err := fC(b)
+        if err != nil {
+            return nil, err
+        }
+        ...
+    }
+
+
+* Monads
+.code maybe.go /START1 OMIT/,/END1 OMIT/
+
+
+* Monads
+.play -edit maybe.go /START2 OMIT/,/END2 OMIT/
+
+
+* Monads
+This is cool, but... Is it crazy? Non-idiomatic Go?
+.image monad3.jpg
+
+
+* Monads
+`bufio.Scanner`
+
+	scanner := bufio.NewScanner(os.Stdin)
+	for scanner.Scan() {
+		fmt.Println(scanner.Text())
+	}
+	if err := scanner.Err(); err != nil {
+		fmt.Fprintln(os.Stderr, "reading standard input:", err)
+	}
+
+[[https://blog.golang.org/errors-are-values]]
+
+These are narrow implementations of the `Maybe` Monad idea...
+
+
+* Monads
+Score: *F*
+
+- Requires parametric polymorphism (a.k.a. Generics) to make this _practical_. ✘
+
+
+* Conclusion
+- Do use immutable vars by convention*
+- Do use referential transparency by convention*
+- Definitely leverage first-class functions
+- Don't go nuts with recursion
+- Will have to wait for Generics for higher-order functions and Monads
+- Don't hold your breath for Pattern Matching or Currying
+
+_*_where_it_makes_sense_ (e.g. does not impact performance)
+
+
+* Done!
+.image done.jpg
