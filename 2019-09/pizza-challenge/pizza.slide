@@ -1,0 +1,83 @@
+Pizza Coding Challenge
+23 September 2019
+Tags: edmontongo, golang
+
+Edmonton Go
+@edmontongo
+
+https://edmontongo.org
+
+* The process
+
+Suggested:
+
+- Pair programming
+- Less experienced gopher drives
+- More experienced gopher serves as mentor
+
+* The prizes
+
+- Squishable gopher draw
+
+* Follow along
+
+.link https://bit.ly/pizza-coding-challenge
+
+
+* The algorithm
+
+people/4 = large pizzas 
+
+* Hello Pizza
+
+Challenge: Build a program to calculate how many pizzas to order using Go and the standard library.
+
+.play -edit pizza.go
+
+* Getting input
+
+- Interactive command-line (`fmt.Scanf`)
+    
+    How many people? 15
+
+    You should order 4 pizzas.
+
+- Command line flags (`os.Args` or `flag.IntVar`)
+
+    go run pizza.go 15
+
+- Environment variables (`os.LookupEnv`)
+
+    PEOPLE=15 go run pizza.go
+
+* Phase I: Validation and polish
+
+- Round off to the nearest integer (`math.Round`)    
+- Only allow numeric values
+- Zero values
+- Pluralize output correctly (pizza/pizzas)
+- Test suite (`go` `test` and "testing" package)
+
+* Phase II: Dietary restrictions
+
+Requirements change. Now we need to get input for total people, as well as counts 
+for dietary restrictions.
+
+- Gluten free
+- Vegetarian
+- Vegan
+
+Enhance the algorithm to order enough pizza to satisfy the requirements, 
+without creating food waste (best fit).
+
+Use table driven tests to test various scenarios.
+.link https://golang.org/wiki/TableDrivenTests
+
+* Phase III: Web frontend
+
+Use `html/template` and `http.ListenAndServe` to build a web-based 
+form to ask for the number of people and respond with the results.
+
+- Continue to provide command line interface with common "business logic" shared between both UIs
+- Utilize HTML5 validation on the client-side (input type number)
+- Write tests with the `httptest` package
