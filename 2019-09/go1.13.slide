@@ -1,0 +1,70 @@
+Go 1.13 Release
+23 September 2019
+Tags: edmontongo, golang
+
+Matthias Stone
+Senior Consultant, Bellstone Engineering
+matthias@bellstone.ca
+
+
+* What's New!
+
+- TLS 1.3 on by default
+- Improvements to number literals
+- Error wrapping
+- The go command now downloads and authenticates modules using the Go module mirror and Go checksum database by default
+- Improved modules support
+
+* TLS 1.3
+
+- Smaller overhead for connections
+- Really small overhead for reconnections
+- Drops deprecated protocols
+
+* Improvements to number literals
+
+- Binary integer literals: The prefix 0b or 0B indicates a binary integer literal such as 0b1011.
+- Octal integer literals: The prefix 0o or 0O indicates an octal integer literal such as 0o660.
+- Hexadecimal floating point literals: The prefix 0x or 0X may now be used to express the mantissa of a floating-point number in hexadecimal format such as 0x1.0p-1021. A hexadecimal floating-point number must always have an exponent, written as the letter p or P followed by an exponent in decimal. The exponent scales the mantissa by 2 to the power of the exponent.
+- Imaginary literals: The imaginary suffix i may now be used with any (binary, decimal, hexadecimal) integer or floating-point literal.
+- Digit separators: The digits of any number literal may now be separated (grouped) using underscores, such as in 1_000_000, 0b_1010_0110, or 3.1415_9265. An underscore may appear between any two digits or the literal prefix and the first digit.
+
+* Error Wrapping
+
+  errors.Unwrap(fmt.Errorf("... %w ...", ..., err, ...))
+.caption returns err. New verb for fmt.Errorf, "%w" wraps an error.
+
+  errors.Is(err, os.ErrExist)
+.caption Looks to see if any of the wrapped errors are os.ErrExist
+
+  var perr *os.PathError
+  if errors.As(err, &perr) {
+       fmt.Println(perr.Path)
+  }
+.caption resolves any underlying wrapped error
+
+
+* Go Cache!
+
+- Faster downloads for packages with large history
+
+For example, if a company ran a module proxy serving private modules,
+users would configure go using:
+
+        GOPRIVATE=*.corp.example.com
+        GOPROXY=proxy.example.com
+        GONOPROXY=none
+
+This would tell the go command and other tools that modules beginning with
+a corp.example.com subdomain are private but that the company proxy should
+be used for downloading both public and private modules, because
+GONOPROXY has been set to a pattern that won't match any modules,
+overriding GOPRIVATE.
+
+* Improved module support
+
+- Active by default in $GOPATH/src!!!
+- Verify sums of new things
+
+
+* Congrats Go team!
