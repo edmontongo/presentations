@@ -1,0 +1,56 @@
+Four Go-to packages
+Things I use often
+25 Jan 2021
+Tags: edmontongo, golang
+
+Matthias Stone
+CTO, Bellstone Engineering
+matthias@bellstone.ca
+
+* This is a personal list of common packages for Go
+
+- It is not comprehensive
+- These are what I find pulled into most projects
+- Feel free to stop me and ask questions!
+
+* Environment variables with Envconfig
+
+Kelsey Hightower's [[https://github.com/kelseyhightower/envconfig][envconfig]] package simplifies parsing environment variables.
+
+- Declare a struct with some tagged fields
+- Parse environment variables into the struct
+- That's it
+
+.play -edit envconfig.go /^func main/,/^}/
+
+* Logging with Zap
+
+Uber's [[https://github.com/uber-go/zap][Zap]] bills itself as "Blazing fast, structured, leveled logging in Go."
+
+- Intialize a logger. Sugared, third party, etc.
+- Log stuff!
+
+.play -edit zap.go /^func main/,/^}/
+
+* Testing with Testify
+
+[[https://github.com/stretchr/testify][Testify]] provides a lot of useful sugar around testing code.
+
+- assert behaves like t.Error
+- require fails the test immediately
+- Helpers for mocks, http, test suites
+- Many, many convenience functions
+
+.code -edit testify_test.go /^func/,/^}/
+
+* Negroni
+
+[[https://github.com/urfave/negroni][Negroni]] provides a simple method for apply middleware to HTTP call stacks
+
+- Has some helpful defaults
+- Common packages for things like Oauth
+- Possible to compose groups of layers together
+
+.code -edit negroni.go /^func/,/^}/
+
+* What are your Go-to packages?
