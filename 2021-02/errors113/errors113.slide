@@ -1,0 +1,193 @@
+# Errors in v1.13+
+
+Peter Preeper
+22 Feb 2021
+ppreeper@gmail.com
+
+## Errors as values
+
+using [errors as values](https://blog.golang.org/errors-are-values) has been invaluable
+
+standard library supports error types through
+
+* errors.New()
+* fmt.Errorf()
+
+## Errors v1.12 and previous
+
+## Normal error check
+
+.code -numbers main.go /S12_ERR_CHECK OMIT/,/E12_ERR_CHECK OMIT/
+
+## Comparison to Sentinel values
+
+database.go
+
+.code -numbers database.go /SSENTINEL OMIT/,/ESENTINEL OMIT/
+.code -numbers database.go /SEMPTY OMIT/,/EEMPTY OMIT/ 
+
+main.go
+
+.code -numbers main.go /S12_SENT_CHECK OMIT/,/E12_SENT_CHECK OMIT/
+
+## Sentinels must be exact
+
+database.go
+
+.code -numbers database.go /SSENTINEL OMIT/,/ESENTINEL OMIT/
+.code -numbers database.go /SPERROR OMIT/,/EPERROR OMIT/ 
+
+main.go 
+
+.code -numbers main.go /S12_SENTF_CHECK OMIT/,/E12_SENTF_CHECK OMIT/
+
+## Error Type
+
+Define error type via interface
+
+database.go
+
+.code -numbers database.go /SQTYPE OMIT/,/EQTYPE OMIT/
+
+## Error Type Check
+
+database.go
+
+.code -numbers database.go /SQERROR OMIT/,/EQERROR OMIT/
+
+main.go
+
+.code -numbers main.go /S12_TYPE_CHECK OMIT/,/E12_TYPE_CHECK OMIT/
+
+## Error Type Check with Sentinel
+
+database.go
+
+.code -numbers database.go /SQPERROR OMIT/,/EQPERROR OMIT/
+
+main.go
+
+.code -numbers main.go /S12_TYPE_SENT OMIT/,/E12_TYPE_SENT OMIT/
+
+## Errors wrapping
+
+main.go
+
+.code -numbers main.go /S12_WRAP OMIT/,/E12_WRAP OMIT/
+
+## Errors in v1.13+
+
+## Changes in v1.13
+
+Adds new functionality to the `error` type
+
+* `errors.Is` function compares and error to a value
+* `errors.As` function tests whether an error is a specific type
+
+It is usually better to use `errors.Is` or `errors.As` since the functions examines the entire chain in a single call
+
+
+## Normal error check
+
+main.go
+
+.code -numbers main.go /S13_ERR_CHECK OMIT/,/E13_ERR_CHECK OMIT/
+
+## Comparison to Sentinel values
+
+database.go
+
+.code -numbers database.go /SSENTINEL OMIT/,/ESENTINEL OMIT/
+.code -numbers database.go /SEMPTY OMIT/,/EEMPTY OMIT/ 
+
+main.go
+
+.code -numbers main.go /S13_SENT_CHECK OMIT/,/E13_SENT_CHECK OMIT/
+
+## Sentinels checked in the chain
+
+database.go
+
+.code -numbers database.go /SSENTINEL OMIT/,/ESENTINEL OMIT/
+.code -numbers database.go /SPERROR OMIT/,/EPERROR OMIT/ 
+
+main.go 
+
+.code -numbers main.go /S13_SENTF_CHECK OMIT/,/E13_SENTF_CHECK OMIT/
+
+## Error Type Check
+
+database.go
+
+.code -numbers database.go /SQERROR OMIT/,/EQERROR OMIT/
+
+main.go
+
+.code -numbers main.go /S13_TYPE_CHECK OMIT/,/E13_TYPE_CHECK OMIT/
+
+## Error Type Check with Sentinel
+
+database.go
+
+.code -numbers database.go /SQPERROR OMIT/,/EQPERROR OMIT/
+
+main.go
+
+.code -numbers main.go /S13_TYPE_SENT OMIT/,/E13_TYPE_SENT OMIT/
+
+## Errors wrapping changes
+
+`errors` includes a new verb `%w` in `fmt.ErrorF`
+
+main.go
+
+.code -numbers main.go /S13_WRAP_V OMIT/,/E13_WRAP_V OMIT/
+
+`errors.Is` fails to find sentinel value because the error is a concatenated string
+
+## Error wrapping with `%w`
+
+main.go
+
+.code -numbers main.go /S13_WRAP_W OMIT/,/E13_WRAP_W OMIT/
+
+`errors.Is` find sentinel value buried in the chain
+
+## Finding wrapped error types
+
+main.go
+
+.code -numbers main.go /S13_WRAP_DEPTH OMIT/,/E13_WRAP_DEPTH OMIT/
+
+`errors.As` finds the error type buried in the chain
+
+## To wrap or not to wrap
+
+depends on context as wrapping an error exposes it to callers
+
+**Do not wrap an error when doing so would expose implementation details**
+
+When it is good:
+
+* calling a reader like io.Reader to allow inspection of the underlying problem
+
+When it is not-so-good:
+
+* when wrapping the error exposes the implementation details, this violates the abstraction principles
+
+## Whether to wrap example
+
+Your code has a `LookupUser` function that uses `database/sql`
+
+A sentinel value is `sql.ErrNoRows` when called insite a `%v` then the caller function cannot 
+look inside the sql.ErrNoRows but a `%w` could look inside a wrapped call to find it. 
+Doing this would allow a call like:
+
+    err := pkg.LookupUser(...)
+    if errors.Is(err, sql.ErrNoRows) ...
+
+But then your function must always return `sql.ErrNoRows` even if you change database packages.
+Clients depend on a stable API so **wrapping an error makes that error part of your API**.
+If you do not want to commit supporting the error as part of your API, do not wrap it.
+Make sure the error text stays the same to preserve the same information from the error.
+
