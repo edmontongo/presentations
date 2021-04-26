@@ -1,0 +1,4 @@
+cmd
+*.slide
+*.txt
+.gcloudignore

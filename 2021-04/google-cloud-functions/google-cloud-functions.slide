@@ -1,0 +1,230 @@
+Google Cloud Functions
+A Thorough Introduction
+26 Apr 2021
+Tags: edmontongo, golang, serverless, cloudfunctions
+
+Matthias Stone
+Sr. Software Consultant, Bellstone Engineering
+matthias@bellstone.ca
+
+* Introduction
+
+* Introduction - What is a Cloud Function
+
+In the Google Cloud, a Cloud Function is a piece of code that is executed when some event happens.
+
+Often labeled with the "serverless" model of computing, similar  functionality is available in other clouds, eg. AWS Lambda functions.
+
+Cloud Functions can be written in many languages, such as Node.js, Python, Go, Java, C#, Ruby, and PHP.
+
+This presentation covers an introduction to Google Cloud Functions written in Go.
+
+* Introduction - Why is a Cloud Function
+
+- Billed per invocation and resource usage
+- Built in scaling
+- Minimal hosting fuss
+- Integrated into Google Cloud infrastructure
+
+* Introduction - Requirements of Cloud functions
+
+*Suitable*when:*
+
+- All assets are in code
+- Code is small, independent pieces
+- Inconsistent loads
+
+*Not*suitable*when:*
+
+- Guaranteed minimum latency
+- Long running jobs
+- Persisting state
+- Compute intensive
+- Operation cannot run on the Cloud*
+
+.caption *Other people's computers.
+
+* Introduction - Types of cloud functions
+
+- HTTP Handlers
+- Pub/Sub events
+- Cloud Storage events
+- Many upcoming Firebase integrations
+- Cron jobs can be triggered from scheduled
+
+* Introduction - Writing an HTTP Trigger
+
+A simple HTTP server and handler:
+
+.code cmd/helloworld/main.go /^func main/,/^}/
+.code functionHelloWorld.go /^func HelloWorld/,/^}/
+
+To convert to a cloud function:
+
+- Drop the func main
+- Do not be the main package
+
+
+* Deployment
+
+* Deployment - Using the UI
+
+Cloud Functions can be quickly deployed from the Google Cloud Console.
+
+- Go to the Functions tab of the Google Cloud Console for the project.
+- Edit the existing function, or select create
+- Configure the deployment environment
+- Upload the code
+- Deploy!
+
+* Deployment - Using the CLI
+
+# Requires Cloud build API to be enabled
+# Entrypoints exist
+# Skipping env for now
+# .gcloudignore
+
+- Download [[https://cloud.google.com/sdk/docs/install][gcloud]], the Google Cloud SDK
+- Log in with your google credentials
+
+    > gcloud auth login
+
+- Set project id
+
+    > gcloud config set project edmonton-go
+
+- `go`build` first! Otherwise the build failure happens very slowly.
+- Deploy!
+
+    > gcloud functions deploy HelloWorld --runtime go113 --allow-unauthenticated --trigger-http
+
+- Wait...*
+.caption *Even after deployment finishes, not all calls go to the new function
+
+* Deployment - Using the CLI - Output
+
+    > gcloud functions deploy HelloWorld --runtime go113 --allow-unauthenticated --trigger-http
+
+.code deployment.txt
+
+    >
+
+* Deployment - Basic project layout
+
+- The deployed project cannot be `package main`.
+- Use Go modules.
+- Functions belong in top level directory. That package is where the entrypoints are searched for.
+- Tools for testing etc. can be in subfolders.
+- Libraries can be in subfolders.
+- I name my entry points functionXxxxxYyyyyy.go so they're easy to find.
+- Configure a `.gcloudignore`
+- Large projects may have different needs.
+
+* Deployment - Configuration
+
+Idiomatic configuration of Google Cloud functions is done through environment variables.
+
+- Use [[https://github.com/kelseyhightower/envconfig][envconfig]]
+- Use sane defaults
+- Deploy with the flag `--env-vars-file`
+- Don't check in environment specific configuration to a project
+- Secrets? More on that later
+
+
+
+* A Different Concurrency Model
+
+Cloud functions differ from the default Go concurrency model that has multiple requests running within the same process, with accessing the same memory and other resources.
+
+A single cloud function instance only handles one request at a time. When multiple requests are pending, additional instances are started with their own state.
+
+State isn't guaranteed to be persisted between calls, or to be eliminated. Requests can be handled by instance A, then B, then A again.
+
+* Concurrency Model Implications
+
+- Cloud Functions invocations are cold or warm. Cold is spun up from scratch, while warm has the leftover state from a previous call.
+- Steps that take a long time on initialization can, and should be cached.
+- Little need for sync primitives, or worrying about multiple writes to a map.
+- Goroutines and memory can leak between calls, increasing cost.
+
+
+
+* Accessing Services
+
+* Services - Credentials
+
+Cloud Functions are configured with blah and XYZ
+- Service Credentials your cloud function has when it runs/access for your cloud function
+
+* Services - Datastores
+
+* Services - Logging
+
+
+- What already exists (naked logs)
+- fmt.Println
+- Proper google package
+- With package of choice
+
+* Services - Auth
+- Mentioning google cloud project (firestore)
+
+* Services - Secrets
+- Logging Secrets?
+
+
+* Testing
+
+* Testing - Unit
+
+Unit tests for Cloud Functions are similar to other applications.
+
+- Use the `http/httptest` package to test against the handlers.
+- Stub out external dependencies to taste.
+
+.code functionHelloWorld_test.go /^func TestHelloWorld/,/^}/
+
+* Testing - Local and Integration
+
+Local and integration testing can be done by connecting to Google Cloud from a local host, or tests can performed against a project set up as another environment.
+
+The `gcloud` tool provides local emulators of, accessible under `gcloud emulators`.
+
+.caption Note: This is beta functionality.
+
+Emulators can be used for quicker iteration and testing without needing to deploy to the cloud or credential into real projects.
+
+
+
+* Techniques
+
+* Techniques - Lazy initialization
+
+Loading a slow resource, such as JSON elsewhere on the web, secrets, or opening a database connection can have a large impact on performance if the action is taken on every invocation.
+
+- Either initialize slow resources lazily, or on init parallel to the request (like a promise). Blocking a call that may not need the resource adds unnecessary latency.
+- I often use the same object to inject test doubles, as commonly these represent external resources.
+- Make sure critical information isn't leaked between requests.
+
+* Techniques - Lazy initialization example
+
+.code functionLazyInit.go /START OMIT/,/END OMIT/
+
+
+* Techniques - Using a muxer
+- Cloud function different frnot
+- Reasons
+- Fake service
+- Combining rare service calls for more "hot" calls
+- For some reason you have more than 1000 endpoints (limit)
+
+* Techniques - Embedding files
+* Techniques - Serving HTML
+
+* Limitations
+
+- Go 1.13
+- Embedding files (not go 1.16)
+- No step-through debugger
+
+* Questions

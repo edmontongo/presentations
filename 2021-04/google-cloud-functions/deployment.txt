@@ -1,0 +1,20 @@
+Deploying function (may take a while - up to 2 minutes)...⠹
+For Cloud Build Stackdriver Logs, visit: https://console.cloud.google.com/logs/viewer?project=edmonton-go&advancedFilter=resource.type%3Dbuild%0Aresource.labels.build_id%3D37f07bd6-f957-4c50-8460-c513d05c6902%0AlogName%3Dprojects%2Fedmonton-go%2Flogs%2Fcloudbuild
+Deploying function (may take a while - up to 2 minutes)...done.
+availableMemoryMb: 256
+buildId: 37f07bd6-f957-4c50-8460-c513d05c6902
+entryPoint: HelloWorld
+httpsTrigger:
+  securityLevel: SECURE_OPTIONAL
+  url: https://us-central1-edmonton-go.cloudfunctions.net/HelloWorld
+ingressSettings: ALLOW_ALL
+labels:
+  deployment-tool: cli-gcloud
+name: projects/edmonton-go/locations/us-central1/functions/HelloWorld
+runtime: go113
+serviceAccountEmail: edmonton-go@appspot.gserviceaccount.com
+sourceUploadUrl: https://storage.googleapis.com/gcf-upload-us-central1-47a3f0ad-47e1-40ea-aa17-f1390eba9e2b/49c12c31-e1a9-418d-99f2-c86d05ad656b.zip?GoogleAccessId=service-260349090764@gcf-admin-robot.iam.gserviceaccount.com&Expires=1619471229&Signature=cSH48GZTfs08Go6zhUUSi4ZXwNQFaVCIalDF0WFcACbyVhze%2Fu6s7mBf0RSYSWPAE1wHJBJpJHeyHawu%2B14Ui3VFxOvBZOFbc62RN9oQQybl5fiLpMdBYqd6ECJ0cQ1oMW3Zp%2FHBU3bPQrVOe0s3kLPBvR5HtLjBD%2Fgvfj%2BsWwaW2bgz5fEiR9rcqAk0J4EZ0IK9Qh88REDApny92EcQCLd%2FvfrcHuASFZL1mvW9iRUuvQEDkBMyX5WYC3nlpUivSUBCqkjALGd9QbxaBhn4OKPMKukhz1NGfA%2FAVj89zuhDBZSjyQP4u2ZA2xfLtCuxM%2FcYGsweH3zHcbB6gvvhzg%3D%3D
+status: ACTIVE
+timeout: 60s
+updateTime: '2021-04-26T20:38:22.763Z'
+versionId: '2'
