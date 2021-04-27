@@ -38,7 +38,7 @@ This presentation covers an introduction to Google Cloud Functions written in Go
 
 - Guaranteed minimum latency
 - Long running jobs
-- Persisting state
+- Persisting state, or connections like websockets
 - Compute intensive
 - Operation cannot run on the Cloud*
 
@@ -50,7 +50,7 @@ This presentation covers an introduction to Google Cloud Functions written in Go
 - Pub/Sub events
 - Cloud Storage events
 - Many upcoming Firebase integrations
-- Cron jobs can be triggered from scheduled
+- Cron like jobs can be triggered with scheduled pub-sub
 
 * Introduction - Writing an HTTP Trigger
 
@@ -61,8 +61,8 @@ A simple HTTP server and handler:
 
 To convert to a cloud function:
 
-- Drop the func main
-- Do not be the main package
+- Drop the `func`main`
+- Do not be the `main` package
 
 
 * Deployment
@@ -111,7 +111,7 @@ Cloud Functions can be quickly deployed from the Google Cloud Console.
 
 * Deployment - Basic project layout
 
-- The deployed project cannot be `package main`.
+- The deployed project cannot be `package`main`.
 - Use Go modules.
 - Functions belong in top level directory. That package is where the entrypoints are searched for.
 - Tools for testing etc. can be in subfolders.
@@ -149,28 +149,44 @@ State isn't guaranteed to be persisted between calls, or to be eliminated. Reque
 
 
 
-* Accessing Services
+* Google Services
 
-* Services - Credentials
+* Google Services - Credentials
 
-Cloud Functions are configured with blah and XYZ
-- Service Credentials your cloud function has when it runs/access for your cloud function
+Cloud Functions are provided a credential when they are invoked, often referred to as the Google Application Default Credential. It's essentially a JWT.
+
+- Credentials can be configured per function.
+- Access to various services can be controlled by the credential and other constraints.
+- The credential contains the current cloud project's name. This is important when accessing some services.
 
 * Services - Datastores
 
+I strongly recommend using one of the Google Cloud, unless specific other needs are identified, such as cost. The APIs are very good, centralized logging arrives for free, and they have well documented behaviour for distributed systems.
+
+For user-oriented services I often use Firestore. It has great support for authenticating and syncing data with browser and mobile clients.
+
 * Services - Logging
 
+Out of the box, cloud functions already log deployments, invocations, and return codes. This information is used to provide dashboards out of the box.
 
-- What already exists (naked logs)
-- fmt.Println
-- Proper google package
-- With package of choice
+Inside a cloud function, logging splits into two streams:
 
-* Services - Auth
-- Mentioning google cloud project (firestore)
+*Plaintext:*
+The `fmt` and `log` packages work just fine out of the box, and anything sent to `stdout` or `stderr` will be picked up as well.
 
-* Services - Secrets
-- Logging Secrets?
+*JSON:*
+JSON logs must conform to the Stackdriver format. Any JSON fields that do not conform to the specification _will_be_deleted_.
+
+- Use the provided package [[https://pkg.go.dev/cloud.google.com/go/logging][cloud.google.com/go/logging]], or
+- Ensure your logging library has a sink that conforms to the specification.
+
+* Google Services - Secrets
+
+Google Cloud provides a service called "Secret Manager." It is fairly straightforward and intuitive to use.
+
+- Add the secret
+- Give permissions
+- Load the secret as necessary in the Cloud Function
 
 
 * Testing
@@ -188,7 +204,7 @@ Unit tests for Cloud Functions are similar to other applications.
 
 Local and integration testing can be done by connecting to Google Cloud from a local host, or tests can performed against a project set up as another environment.
 
-The `gcloud` tool provides local emulators of, accessible under `gcloud emulators`.
+The `gcloud` tool provides local emulators of, accessible under `gcloud`emulators`.
 
 .caption Note: This is beta functionality.
 
@@ -205,6 +221,7 @@ Loading a slow resource, such as JSON elsewhere on the web, secrets, or opening 
 - Either initialize slow resources lazily, or on init parallel to the request (like a promise). Blocking a call that may not need the resource adds unnecessary latency.
 - I often use the same object to inject test doubles, as commonly these represent external resources.
 - Make sure critical information isn't leaked between requests.
+- All uploaded init blocks _will_be_executed_.
 
 * Techniques - Lazy initialization example
 
@@ -212,19 +229,46 @@ Loading a slow resource, such as JSON elsewhere on the web, secrets, or opening 
 
 
 * Techniques - Using a muxer
-- Cloud function different frnot
-- Reasons
-- Fake service
+
+HTTP Cloud Functions are just HTTP handlers. Any techniques used in Go HTTP servers can be applied, including muxers and middleware like [[https://github.com/urfave/negroni][negroni]].
+
+There are several good reasons to do this:
+
+# And one bad, but later ;)
+
+- Fronting other REST like resources
+- Migrating an existing service
 - Combining rare service calls for more "hot" calls
-- For some reason you have more than 1000 endpoints (limit)
+- For some reason there are more than 1000 endpoints (limit)
 
 * Techniques - Embedding files
+
+Files can be embedded server with tools like [[https://github.com/gobuffalo/packr][packr]].
+
+- Any build steps such as `go`generate` etc. must be run client side before deployment.
+- The Cloud Function artifact is limited to 100MiB when compressed.
+- Not in line with the typical use case for serving
+
 * Techniques - Serving HTML
+
+If you have a muxer, files, and are responding to HTTP requests...
+
+.code functionHTML.go /START OMIT/,/END OMIT/
+
 
 * Limitations
 
-- Go 1.13
-- Embedding files (not go 1.16)
-- No step-through debugger
+- No step-through debugger in the cloud environment
+- Currently only Go 1.13 is supported
+- Embedding files is awkward (no go 1.16)
+
+* Summary
+
+Google Cloud Functions provide:
+
+- Easy scalability
+- Low effort micro-service model
+- Tight integration with Google Cloud services
+- Low maintenance
 
 * Questions

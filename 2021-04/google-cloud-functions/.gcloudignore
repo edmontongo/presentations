@@ -2,3 +2,4 @@ cmd
 *.slide
 *.txt
 .gcloudignore
+*.sh

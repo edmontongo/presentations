@@ -31,7 +31,7 @@ func ExperimentParallelRequests(w http.ResponseWriter, req *http.Request) {
 }
 
 func ExperimentGoroutines(w http.ResponseWriter, req *http.Request) {
-	wait := make(chan struct{}, 0)
+	wait := make(chan struct{})
 	go func() {
 		lock.Lock()
 		count++
