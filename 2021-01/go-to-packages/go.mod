@@ -12,4 +12,5 @@ require (
 	github.com/urfave/negroni v1.0.0
 	go.uber.org/zap v1.16.0
 	golang.org/x/oauth2 v0.0.0-20210125201302-af13f521f196 // indirect
+	gopkg.in/yaml.v2 v2.2.8 // indirect
 )
