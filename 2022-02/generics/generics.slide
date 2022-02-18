@@ -1,0 +1,171 @@
+# Generics Basics
+17 Feb 2022
+Tags: go, v1.18, generics
+Summary: Introduction to new generics feature
+
+Peter Preeper
+SysAdmin Developer, AR Thomson Group
+preeper.peter@arthomson.com
+@ppreeper
+
+## Generics Defined
+
+Lifted from Wikipedia [Generic programming](https://en.wikipedia.org/wiki/Generic_programming)
+
+**Generic programming** is a style of computer programming in which algorithms are written in terms of types _to-be-specified-later_ that are then _instantiated_ when needed for specific types provided as parameters.
+This approach, pioneered by the ML programming language in 1973, permits writing common functions or types that differ only in the set of types on which they operate when used, thus reducing duplication.
+Such software entities are known as generics in Ada, C#, Delphi, Eiffel, F#, Java, Nim, Python, Rust, Swift, TypeScript and Visual Basic .NET.
+
+## Generics in other languages
+
+## Templates in C++
+
+Function templates
+
+    template<typename T>
+    T max(T x, T y) {
+    return x < y ? y : x;
+    }
+
+Implementation
+
+    int max(int x, int y) {
+    return x < y ? y : x;
+    }
+
+## Generics in Go
+
+## Standard function (library) (<v1.18)
+
+.code -numbers sums.go /START REGFUNC/,/END REGFUNC/
+
+Notice the same funcionality, but for different types.
+The signatures are remarkably the same.
+
+## Standard function (calling) (<v1.18)
+
+.code -numbers main.go /START REGFUNC/,/END REGFUNC/
+
+- Notice when calling the different types, seperate function names.
+- When calling the functions you have to make sure that you specify the correct signature and inputs.
+
+## Standard function (<v1.18)
+
+Even though the signature are similar you cannot call with the incorrect type.
+
+example output of calling floats in the int64 function
+
+    ./main.go:26:10: cannot use floats (variable of type map[string]float64) as
+    type map[string]int64 in argument to SumInts
+
+## Generic function (library) (v1.18+)
+
+.code -numbers sumsg.go /START GENFUNC1/,/END GENFUNC1/
+
+Notice the new **type parameter** [] section before the parameters section.
+
+**comparable** is a constraint where values can be compared by != or ==
+
+**any** is a constraint roughly equivalent to empty interface{}
+
+**int64 | float64** is called a union, defining the types allowed for the parameter
+
+## Generic function (calling) (v1.18+)
+
+.code -numbers main.go /START GENFUNC1/,/END GENFUNC1/
+
+- Notice how the different values can be passed to the same function
+
+## Generic function type definitions
+
+You can define type parameters as a **type** interface
+
+.code -numbers sumsg.go /START GENFUNC2/,/END GENFUNC2/
+
+- This example defines the union within an interface
+- Using interfaces as part of type definitions will be explored in another example
+
+## Constraints (library) (<v1.18)
+
+When seeing if something is equal
+
+.code -numbers eq.go /START EQSTD/,/END EQSTD/
+
+## Constraints (calling) (<v1.18)
+
+.code -numbers main.go /START EQSTD/,/END EQSTD/
+
+## Constraints (library) (v1.18+)
+
+When seeing if something is equal
+
+.code -numbers eqg.go /START EQGEN/,/END EQGEN/
+
+## Constraints (calling) (<v1.18)
+
+.code -numbers main.go /START EQGEN/,/END EQGEN/
+
+## Bubble Sort Example
+
+## Non Generics Sort (library)
+
+.code -numbers bsort.go /START BSORTI/,/END BSORTI/
+.code -numbers bsort.go /START BSORTI64/,/END BSORTI64/
+.code -numbers bsort.go /START BSORTF32/,/END BSORTF32/
+.code -numbers bsort.go /START BSORTF64/,/END BSORTF64/
+.code -numbers bsort.go /START BSORTS/,/END BSORTS/
+
+Code size
+
+    wc -l bsort.go
+    106 bsort.go
+
+## Generics Sort (library)
+
+.code -numbers bsortg.go /START BSORTG/,/END BSORTG/
+
+Code size
+
+    wc -l bsortg.go
+    26 bsortg.go
+
+## Non Generics Sort (calling)
+
+.code -numbers main.go /START BSORT/,/END BSORT/
+
+## Generics Sort (calling)
+
+.code -numbers main.go /START BSORTG/,/END BSORTG/
+
+## Generics Templates Definition
+
+.code -numbers typeslice.go /START GTEMPLATE/,/END GTEMPLATE/
+
+## Generics Templates Calling
+
+.code -numbers typeslice.go /START GTEMPCALL/,/END GTEMPCALL/
+
+## Generics Interfaces
+
+.code -numbers typeinterface.go /START TINTF/,/END TINTF/
+
+## Benchmarks
+
+    go test -bench .
+
+    goos: linux
+    goarch: amd64
+    pkg: example/generics_demo
+    cpu: AMD Ryzen 9 5900X 12-Core Processor
+    BenchmarkBubbleSortInt-24                       100000000               10.32 ns/op
+    BenchmarkBubbleSortAlphaNumInt-24               114943564               10.20 ns/op
+    BenchmarkBubbleSortFloat64-24                   114215698               10.39 ns/op
+    BenchmarkBubbleSortAlphaNumFloat64-24           112662000               10.59 ns/op
+    BenchmarkBubbleSortString-24                    26277722                40.15 ns/op
+    BenchmarkBubbleSortAlphaNumString-24            26025234                42.45 ns/op
+    BenchmarkSumsInt-24                             18092128                62.71 ns/op
+    BenchmarkSumsFloat64-24                         19410314                61.20 ns/op
+    BenchmarkSumIntsOrFloats-24                     19154020                61.18 ns/op
+    BenchmarkSumNumbers-24                          18505876                60.93 ns/op
+    PASS
+    ok      example/generics_demo   14.302s
