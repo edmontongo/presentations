@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -eu
+
+rm -rf sample.ed25519*
+# BEGIN
+set -v
+time ssh-keygen -t ed25519 -f sample.ed25519 -P "" -C ""
+cat sample.ed25519
+cat sample.ed25519.pub

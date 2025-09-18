@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -eu
+
+# BEGIN
+diff sample-small-rsa-key.pem <(
+      echo -----BEGIN RSA PRIVATE KEY-----
+      openssl base64 < sample-small-rsa-key
+      echo -----END RSA PRIVATE KEY-----) \
+    && echo Identical.

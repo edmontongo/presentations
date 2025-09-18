@@ -1,0 +1,7 @@
+#!/bin/bash
+
+set -eu
+
+rm -rf sample.rsa*
+# BEGIN
+openssl asn1parse -in sample-small-rsa-key.pem
