@@ -1,0 +1,409 @@
+# How RSA keys work
+(go version)
+
+Andrew
+
+: This is stuff I’ve written up before … for this talk, I’ve just converted it to talk format, and ported the code to go.
+
+## RSA keys
+
+Most software developers have seen these, they’re used for SSL/TLS and SSH,
+usually start with `MII`. Here’s an example one:
+
+.play -edit genrsa.go /start cut/+1,/end cut/-1
+
+What are these things, and how do they work?
+
+## This talk
+
+Goal: satisfy intellectual curiosity about something you use every day but
+may not know all that much about
+
+**Outline**
+
+  - Encryption
+  - Asymmetric encryption
+  - RSA computations
+  - Math
+
+Questions are welcome!
+
+Let me know if you want a follow-up talk on encryption with elliptic
+curves.
+
+## Disclaimer
+
+Encryption can definitely be a fun topic to learn about! All this stuff was
+developed by people a lot like you and me. But it takes a lot of very
+careful work to make something that approaches the state of the art in
+security.
+
+Think of this talk as akin to learning about the principle of internal
+combustion: cool and important and necessary, but not sufficient, for
+building a safe transportation system.
+
+## Encryption
+
+Goal: Encode a message in such a way that only the intended recipients can
+decode it.
+
+Basic example: a caesar cipher.
+
+`pmttwewztl`
+
+Replace each letter with the letter that comes `n` letters later in the
+alphabet, looping over at the end.
+
+With only 25 possible keys, this is really easy to break.
+
+.play -edit caesar.go /start cut$/+1,/end cut$/-1
+
+## Better encryption
+
+Instead of using a small static key like 8, use xor with a key longer than
+the message.
+
+     
+    key = randbytes(len(message))
+
+Encryption:
+
+     
+    encrypted = key xor message
+
+Decryption:
+
+     
+    encrypted xor key = (key xor message) xor key
+                      = (message xor key) xor key
+                      = message xor (key xor key)
+                      = message xor 0
+                      = message
+
+Only safe if the key is at least as long as the message and completely
+random and never ever reused.
+
+##
+
+.play -edit symmetric-encrypt.go /START OMIT/,/END OMIT/
+
+: can show that re-running gives different random result every time
+
+##
+
+.play -edit symmetric-decrypt.go /START OMIT/,/END OMIT/
+
+## Making this more practical
+
+Want to use a non-random key, like `passw0rd`, or a key shorter than the
+message, like `tqv9xa-qncnsx-Pamxzg`? There are ways to expand keys, such
+as by using a key as the seed for a random number generator.
+
+Want to reuse a key? Generate a new random initialization value on every
+encryption operation, mix it into the message during encryption, and send
+it alongside the encrypted message.
+
+A standard cipher like AES can take care of these and a lot of other
+things.
+
+You still won’t have a secure *system* though, until you add things like
+message authentication, timestamps, padding, block chaining,
+timing-insensitive operations and so on, to prevent tampering and replay
+and side-channel attacks and so on.
+
+But there’s a bigger problem …
+
+## The problem of shared secrets
+
+‘Symmetric’ keys are the same on both ends of the communication.
+
+If you want to communicate securely with someone, you need a shared key to
+do so.
+
+Either party can create one easily.
+
+But they need a secure way to communicate to the other party …
+
+## Asymmetric encryption
+
+Securely communicate a secret without having a pre-existing shared secret.
+
+We know this is theoretically possible from physical analogies. Using
+padlocks:
+
+  - Give out a bunch of already-open ‘public’ padlocks, keeping the keys
+
+  - Anyone can put a message in a box, lock it with a public padlock, and
+    send it to you
+
+Thought exercises show authenticated / two-way communication possible:
+
+  - I put a message in a box with a private padlock and one of your public
+    padlocks on it. I send it to you. You add my public padlock and your
+    own private padlock and send it back. I remove my padlocks and send it
+    to you again.
+
+: core idea of asymmetric encryption: being able to lock something without having the key for it
+
+.image img/the-code-book.jpg 150 _
+
+## Enter RSA: Math where encryption key ≠ decryption key
+
+.image img/rsa-abstract.png 550 _
+
+## RSA Computations
+
+## Generating a small key to inspect
+
+.play -edit genrsa-small.go /start cut$/+1,/end cut$/-1
+
+## Encryption
+
+.play -edit rsaenc.go /start cut$/+1,/end cut$/-1
+
+Some functions are not public because they are very unsafe without extra
+processing, e.g., adding padding; we are bypassing all that for educational
+purposes.
+
+## Decryption
+
+.play -edit rsadec.go /start cut$/+1,/end cut$/-1
+
+## In practice
+
+This is relatively slow and hard to use safely, so it’s often used only at
+the start of a message/session to transmit a small random value to be used
+as a symmetric key for a cipher like AES.
+
+(24 bits was just long enough for saying ‘hi!’)
+
+## What’s inside the key?
+
+Tons of TLS-related stuff uses ASN.1 encoding: a self-describing
+hierarchical data format, like JSON or XML, but for binary data; kind of
+like protobufs. Specificaly, the DER “Distinguished Encoding Rules” variant
+of ASN.1.
+
+.play -edit code/asn1parse /^# BEGIN/+1
+
+.play -edit code/rsaparse /^# BEGIN/+2,
+
+  - modulus (in public key too)
+  - publicExponent (in public key too)
+  - privateExponent
+  - prime1
+  - prime2
+  - exponent1, exponent2, coefficient
+
+## PEM format aka Privacy Enhanced Mail
+
+Before email had reasonable attachment support, PEM format was created as a
+way to include encrypted messages and digital signatures in plain text.
+
+It has the same contents as some binary format, just with an extra encoding
+layer.
+
+.play -edit code/der-pem-diff /^# BEGIN/+1,
+
+## From Go
+
+.play -edit rsadump.go /start cut$/+1,/end cut$/-1
+
+## RSA details
+
+.image img/rsa-abstract2.png 550 _
+
+## From Go
+
+.play -edit rsamanual.go /start cut$/+1,/end cut$/-1
+
+All you need to decrypt is the public key and `d`.
+
+## Math
+
+## Where does the private exponent come from?
+
+.image img/rsa-abstract3.png 550 _
+
+## Finding greatest common divisors using Euclid’s algorithm
+
+To find gcd(m, n), divide m by n to get m = q × n + r, then compute gcd(n,
+r) recursively.
+
+.play -edit euclid1.go /start cut$/+1,/end cut$/-1
+
+“Any number [such as d] which divides m and n must divide r = m - q × n”
+
+## Extended Euclidean algorithm
+
+Compute coefficients a, b such that gcd(m, n) = a × m + b × n
+
+.play -edit euclid2.go /start cut$/+1,/end cut$/-1
+
+## Modular inverses
+
+If m and n are relatively prime,
+
+     
+    gcd(m, n) = 1
+
+there are some integers m and n such that
+
+     
+    gcd(m, n) = 1 = a × m + b × n
+                1 ≡ a × m (mod n)
+
+a is the modular inverse of a, mod n, and we have an algorithm for
+computing it.
+
+.play -edit modinverse.go /start cut$/+1,/end cut$/-1
+
+## Computing d
+
+`d` is the modular inverse of `e`, mod `(p - 1)(q - 1)`.
+
+.play -edit rsadetails1.go /start cut$/+1,/end cut$/-1
+
+## Why does it work?
+
+First we need some theory.
+
+Euler’s totient function, φ(n):
+
+  - The number of integers >= 1 and < n, relatively prime to n
+  - For example, φ(6) = 2 because 1 and 5 are relatively prime to 6, but 2
+    and 3 and 4 are not.
+  - For any prime p, φ(p) = p - 1
+  - For any whole numbers m, n, φ(m × n) = φ(m) × φ(n)
+  - In particular, for a product of two primes: φ(n) = φ(p × q),
+    so φ(n) = φ(p × q), which is equal to φ(p) × φ(q) = (p - 1)(q - 1)
+
+## Euler’s totient theorem
+
+  - `a ** Φ(n) ≡ 1 (mod n)` when `a` and `n` relatively prime
+
+Proof sketch:
+
+  - Let f = φ(n); let r1, r2, … rf be the relatively prime numbers that
+    φ(n) counts
+
+  - What is R0 := (a × r1) × (a × r2) × ⋯ × (a × rf) (mod n) ?
+
+    When you multiply together two numbers that are relatively prime to n,
+    you get another number that is relatively prime to n, because you
+    haven’t introduced any factors of n into the product
+
+  - So R0 = R := r1 × r2 × ⋯ × rf (mod n); they just get shuffled
+
+  - R × a ** φ(n) ≡ R (mod n)
+
+  - R has a modular inverse mod n because R and n are relatively prime, so
+    multiply both sides of the congruence by R ** -1 (mod n)
+
+  - Then a ** φ(n) ≡ 1 (mod n)
+
+## Applying Euler’s Theorem
+     
+    encrypted ** d ≡ (message ** e) **  d (mod n)
+                   ≡ message ** (e × d) (mod n)
+
+Because e × d ≡ 1 (mod (p - 1)(q - 1)), then it must be one greater than some
+multiple of (p - 1)(q - 1), that is, there exists some integer k such that
+e × d = 1 + k × (p - 1)(q - 1).
+
+Then
+
+     
+    encrypted ** d ≡ message ** (1 + k × (p - 1)(q - 1)) (mod n)
+                   ≡ message × (message ** (k × (p - 1)(q - 1))) (mod n)
+                   ≡ message × (message ** (k × Φ(n))) (mod n)
+                   ≡ message × ((message ** Φ(n)) ** k) (mod n)
+                   ≡ message × (1 ** k) (mod n)
+                   ≡ message × 1 (mod n)
+                   ≡ message (mod n)
+
+That’s how RSA works!
+
+## Digital signatures: prove you have access to the private key
+
+Signing
+
+     
+    signature ≡ message ** d (mod n)
+
+Verifying
+
+      
+    signature ** e ≡ (message ** d) ** e (mod n)
+                   ≡ message ** (d × e) (mod n)
+                   ≡ message (mod n)
+
+.play -edit rsamanualsign.go /start cut$/+1,/end cut$/-1
+
+But since signing = decrypting, if someone can trick you into signing
+something they provide, they can decrypt your secrets!
+
+## Precomputed private key parameters
+
+What about those?
+
+.play -edit rsadump.go /HL$/,/HL$/+4
+
+## The Chinese Remainder Theorem
+
+If you know a (mod m) and a (mod n), and m and n are relatively prime, then
+you know a (mod m × n).
+
+Suppose a ≡ 2 (mod 3) and a ≡ 1 (mod 5); there’s only one place where those
+line up.
+
+.image img/crt.svg 300 _
+
+## Precomputed private key parameters
+
+Operate mod p and mod q, then combine results. It’s much faster to do a few
+more operations using half the digits, than to do a single operation on a
+much longer number.
+
+.play -edit rsaprecomputed.go /start cut$/+1,/end cut$/-1
+
+## Timing
+
+.play -edit rsaprecomputedtiming.go /start cut$/+1,/end cut$/-1
+
+## Security
+
+  - If you could factor n into p and q, you could get d easily. So if
+    someone finds a significantly faster number-factoring algorithm,
+    possibly solving the P vs NP problem in the process, that would break
+    RSA.
+
+  - If there was some other fast method to produce d from p, it would also
+    let you figure out the prime factors [fairly easily], meaning that this
+    hypothetical fast method would also solve the factoring problem, at
+    least for pairs of primes.
+
+[fairly easily]: https://stackoverflow.com/a/2922113/14558
+
+Therefore breaking RSA in a certain mathematical sense is roughly* as hard
+as solving the general problem of quickly factoring a product of two
+primes.
+
+However, there have been tons of past implementation bugs, and there are
+also mathematical properties of specific parameter choices, that can make
+it easier to break RSA in specific cases.
+
+E.g., square roots, or take GCD of message encrypted twice with different
+keys, or take GCD of keys sharing factors … see the paper “Twenty Years of
+Attacks on the RSA Cryptosystem.”
+
+## Summary
+
+  - Generation: two random primes p and q
+  - Public key: e, and n = p × q
+      - Numbers get ASN.1-encoded
+      - PEM = base64 + wrapper lines
+  - Encryption: m ** e (mod n)
+  - Decryption: (m ** e) ** d (mod n)
+      - d = e ** -1 (mod (p -1)(q - 1))
+      - Computed using extended GCD

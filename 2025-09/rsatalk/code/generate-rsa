@@ -1,0 +1,9 @@
+#!/bin/bash
+
+set -eu
+
+rm -rf sample.rsa*
+# BEGIN
+set -v
+time openssl genrsa 3072 | tee sample-rsa.key
+openssl rsa -pubout < sample-rsa.key

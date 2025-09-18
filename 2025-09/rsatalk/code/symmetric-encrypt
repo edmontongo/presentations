@@ -1,0 +1,9 @@
+#!/bin/bash
+
+set -eu
+
+# BEGIN
+set -v
+pwgen 30 -n1 | tee password
+echo prented_this_is_a_secret | openssl aes-256-cbc -kfile password > encrypted-secret
+hexdump -C encrypted-secret
