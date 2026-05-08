@@ -4,10 +4,7 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
-    "express": "^4.22.1"
-  },
-  "devDependencies": {
-    "qs": "^6.15.1"
+    "express": "^5.2.1"
   },
   "scripts": {
     "serve": "node index.js"

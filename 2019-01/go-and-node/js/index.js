@@ -1,9 +1,9 @@
-const url = "https://www.google.com/humans.txt";
-
 async function fetchHumans(url) {
   const response = await fetch(url);
   return response.text();
 }
+
+const url = "https://www.google.com/humans.txt";
 
 const express = require("express");
 const app = express();
