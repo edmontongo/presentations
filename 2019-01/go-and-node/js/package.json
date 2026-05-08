@@ -6,7 +6,9 @@
   "dependencies": {
     "express": "^4.22.1"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "qs": "^6.15.1"
+  },
   "scripts": {
     "serve": "node index.js"
   },
