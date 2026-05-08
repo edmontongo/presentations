@@ -1,0 +1,231 @@
+# Go and Docker
+
+22 April 2019
+Peter Preeper
+SysAdmin Developer, AR Thomson Group
+preeper.peter@arthomson.com
+
+## Go
+
+Go (often referred to as Golang):
+
+- statically typed
+- compiled programming language
+- with memory safety
+- garbage collection
+- structural typing
+- CSP-style concurrency
+- one binary produced
+
+## Docker
+
+Docker performs operating-system-level virtualization also known as containerization.
+
+<center><img src="docker-layers.png" alt=""></center>
+
+## docker advantage
+
+- split up application into distinct units
+- refocus on the data not specific configuration
+- thinner images than vms
+- common app images available @ hub.docker.com
+
+## docker sizes
+
+Generally smaller but can be much larger.
+
+Some sizes (as of 2019-04-15)
+
+<table>
+	<thead>
+		<td>REPOSITORY</td>
+		<td>TAG</td>
+		<td>IMAGE ID</td>
+		<td>CREATED</td>
+		<td>SIZE</td>
+	</thead>
+	<tbody>
+		<tr>
+			<td>alpine</td>
+			<td>latest</td>
+			<td>cdf98d1859c1</td>
+			<td>5 days ago</td>
+			<td>5.53MB</td>
+		</tr>
+		<tr>
+			<td>debian</td>
+			<td>latest</td>
+			<td>2d337f242f07</td>
+			<td>2 weeks ago</td>
+			<td>101MB</td>
+		</tr>
+	</tbody>
+</table>
+
+## the app
+
+<pre><code class="hljs">func main() {
+	resp, err := http.Get("https://edmontongo.org")
+	check(err)
+	body, err := ioutil.ReadAll(resp.Body)
+	check(err)
+	fmt.Println(len(body))
+}
+
+func check(err error) {
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+}</code></pre>
+
+## common strategy golang:onbuild
+
+Dockerfile:
+<pre><code class="hljs">FROM golang:onbuild</code></pre>
+
+
+Build container:
+<pre><code class="hljs">docker build -t godocker-onbuild -f Dockerfile.onbuild .</code></pre>
+
+
+Running the container:
+<pre><code class="hljs">docker run -it godocker-onbuild</code></pre>
+
+## golang:onbuild
+
+Advantages
+
+- Developers can get up-and-running in a very short amount of time
+- Little Docker knowledge needed to start ‘Dockerizing’
+- Good for creating derivative images
+
+Disadvantages
+
+- Lacks control over the image building process
+- Images are large. As you make more images drive space can dwindle quickly
+
+## common strategy golang:version/latest
+
+Dockerfile:
+<pre><code class="hljs">FROM golang:latest
+RUN mkdir /app
+ADD . /app/.
+WORKDIR /app
+RUN go build -o main .
+CMD ["/app/main"]</code></pre>
+
+Build container:
+<pre><code class="hljs">docker build -t godocker-latest -f Dockerfile.latest .</code></pre>
+
+Running the container:
+<pre><code class="hljs">docker run -it godocker-latest </code></pre>
+
+## golang:version/latest
+
+Advantages
+
+- Control over the build order of the image
+- Don’t need to manually install Go
+
+
+Disadvantages
+
+- Images like golang:version have many layers to them
+- More lines of code involved in writing our dockerfile
+
+
+## How to make smaller images?
+
+<svg width="100%" height="100%" viewBox="0 0 400 400">
+<rect x="0" y="0" width="100%" height="100%" fill="none"/>
+<text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="250">
+&#x2753;
+</text>
+</svg>
+
+## scratch
+an explicitly empty image, especially for building images “FROM scratch”
+
+<pre><code class="hljs">FROM scratch</code></pre>
+
+<br>Useful in building base images (such as debian and busybox) or super minimal images (that contain
+only a single binary and whatever it requires, such as hello-world).
+
+<br>As of Docker 1.5.0, FROM scratch is a no-op in the Dockerfile, and will not create an extra layer in
+your image (so a previously 2-layer image will be a 1-layer image instead).
+
+## building golang container with scratch
+
+Build requires two steps:
+
+- build binary
+- installation of binary into container
+
+Dockerfile:
+<pre><code class="hljs">FROM scratch
+COPY main /
+CMD ["/main"]</code></pre>
+
+Build container:
+<pre><code class="hljs">go build -o main .
+docker build -t godocker-scratch -f Dockerfile.scratch .</code></pre>
+
+Running the container:
+<pre><code class="hljs">docker run -it godocker-scratch</code></pre>
+
+## What went wrong?
+
+<svg width="100%" height="100%" viewBox="0 0 400 400">
+<rect x="0" y="0" width="100%" height="100%" fill="none"/>
+<text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="250">
+&#x1F525;
+</text>
+</svg>
+
+## static linking the binary
+
+Dockerfile:
+<pre><code class="hljs">FROM scratch
+COPY main /
+CMD ["/main"]</code></pre>
+
+Build container:
+<pre><code class="hljs">CGO_ENABLED=0 GOOS=linux go build -a -o main .
+docker build -t godocker-static -f Dockerfile.scratch .
+</code></pre>
+
+Running the container:
+<pre><code class="hljs">docker run -it godocker-static</code></pre>
+
+
+## What is this error?
+
+<svg width="100%" height="100%" viewBox="0 0 400 400">
+<rect x="0" y="0" width="100%" height="100%" fill="none"/>
+<text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="250">
+&#x1F914;
+</text>
+</svg>
+
+## copy all the files needed
+
+Dockerfile:
+<pre><code class="hljs">FROM scratch
+COPY ca-certificates.crt /etc/ssl/certs/
+COPY main /
+CMD ["/main"]</code></pre>
+
+Build container:
+<pre><code class="hljs">CGO_ENABLED=0 GOOS=linux go build -a -o main .
+docker build -t godocker-staticssl -f Dockerfile.scratchssl .
+</code></pre>
+
+Running the container:
+<pre><code class="hljs">docker run -it godocker-staticssl</code></pre>
+
+## Take aways
+
+- use "scratch" to build tiny images
+- use static linking to bring over the go libraries
+- have fun building your micro-containers for your micro-services
