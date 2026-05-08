@@ -1,9 +1,8 @@
-const axios = require("axios");
 const url = "https://www.moogle.com/humans.txt";
 
 async function fetchHumans(url) {
-  const response = await axios.get(url);
-  return response.data;
+  const response = await fetch(url);
+  return response.text();
 }
 
 const express = require("express");

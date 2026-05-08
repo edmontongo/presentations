@@ -1,8 +1,6 @@
-const axios = require("axios");
-
 async function fetchHumans(url) {
-  const response = await axios.get(url);
-  return response.data;
+  const response = await fetch(url);
+  return response.text();
 }
 
 const express = require("express");

@@ -9,7 +9,7 @@ const data = {
 };
 
 const {
-  currently: {summary, temperature},
+  currently: { summary, temperature },
 } = data;
 
 console.info(`${summary} and ${temperature}ºF`);
