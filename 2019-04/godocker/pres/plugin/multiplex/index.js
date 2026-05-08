@@ -8,6 +8,14 @@ var app       	= express();
 var staticDir 	= express.static;
 var server    	= http.createServer(app);
 
+// Security headers middleware
+app.use(function(req, res, next) {
+	res.setHeader('X-Content-Type-Options', 'nosniff');
+	res.setHeader('X-Frame-Options', 'DENY');
+	res.setHeader('X-XSS-Protection', '1; mode=block');
+	next();
+});
+
 io = io(server);
 
 var opts = {
@@ -43,15 +51,21 @@ app.get("/", function(req, res) {
 });
 
 app.get("/token", function(req,res) {
-	var ts = new Date().getTime();
-	var rand = Math.floor(Math.random()*9999999);
-	var secret = ts.toString() + rand.toString();
+	var secret = generateToken();
 	res.send({secret: secret, socketId: createHash(secret)});
 });
 
 var createHash = function(secret) {
-	var cipher = crypto.createCipher('blowfish', secret);
-	return(cipher.final('hex'));
+	// Use SHA-256 for hashing (not encryption) - suitable for token validation
+	var hash = crypto.createHash('sha256');
+	hash.update(secret);
+	return hash.digest('hex');
+};
+
+// Generate cryptographically secure tokens
+var generateToken = function() {
+	var buffer = crypto.randomBytes(32);
+	return buffer.toString('hex');
 };
 
 // Actually listen
