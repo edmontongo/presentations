@@ -1,0 +1,642 @@
+# Software Bill of Materials (SBOM)
+What Is It? Why Does It Matter?
+
+17 June 2026
+Edmonton Go Meetup
+Peter Preeper
+ppreeper@gmail.com
+
+## Agenda
+.background images/golang_slide_blue.png
+
+- What is an SBOM?
+- Why does it exist? — The supply chain attack crisis from Log4j onward
+- Why does it matter? — Security, compliance, trust
+- Where is it used? — Standards, formats, tooling
+- SBOM Formats Deep Dive — SPDX vs CycloneDX vs SWID
+- SBOM in Go — Built-in capabilities & practical tooling
+- Takeaways & Resources
+
+## What Is an SBOM?
+.background images/golang_slide_blue.png
+
+A *Software Bill of Materials* is a formal, machine-readable inventory of all components used to build a software artifact.
+
+Think of it like:
+
+- **Canned food:** Ingredients list, nutritional info, best-before date, manufacturer
+- **Software SBOM:** log4j@2.17.1, spring-core@5.3.20, vulnerability data, fixed-in version, supplier
+
+## What's Inside an SBOM?
+.background images/golang_slide_blue.png
+
+<table>
+<thead>
+<tr><td><b>Field</b></td><td><b>Example</b></td></tr>
+</thead>
+<tbody>
+<tr><td>Component name</td><td><code>golang.org/x/text</code></td></tr>
+<tr><td>Version</td><td><code>v0.3.7</code></td></tr>
+<tr><td>License</td><td><code>BSD-3-Clause</code></td></tr>
+<tr><td>Supplier / Maintainer</td><td><code>golang.org</code></td></tr>
+<tr><td>Dependency relationship</td><td><code>my-app → rsc.io/quote → golang.org/x/text</code></td></tr>
+<tr><td>Checksum (hash)</td><td><code>sha256:aa0398e9...</code></td></tr>
+<tr><td>Known vulnerabilities</td><td>CVE-2023-XXXXX</td></tr>
+</tbody>
+</table>
+
+Standard formats: *SPDX* (ISO/IEC 5962), *CycloneDX* (OWASP)
+
+## Why Does It Exist? — The Wake-Up Calls
+.background images/golang_slide_blue.png
+
+Supply chain attacks have exploded since 2020.
+
+A *supply chain attack* compromises an upstream component (library, build tool, distribution channel) to infect all downstream users.
+
+.image images/Software-Supply-Chain-Integrity.png
+
+## Timeline of Major Supply Chain Attacks
+.background images/golang_slide_blue.png
+
+<pre>2020 --- SolarWinds
+        Attackers breached SolarWinds' build system.
+        Malicious code injected into Orion updates.
+        18,000 organizations infected, including US govt.
+
+2021 --- CodeCov
+        Bash Uploader script modified to exfiltrate
+        credentials from CI/CD pipelines.
+
+2021 --- Log4Shell (CVE-2021-44228)
+        CVSS 10.0 - the most severe vulnerability ever.
+        93% of enterprise cloud environments affected.
+        Hundreds of millions of devices at risk.
+        Exploit existed unnoticed since 2013.</pre>
+
+## Timeline (cont.)
+.background images/golang_slide_blue.png
+
+<pre>2022 --- node-ipc / protestware
+        Dependency overwritten with malicious code
+        deleting files in Russia & Belarus.
+
+2023 --- 3CX Supply Chain Attack
+        Trading software compromised -> 3CX installer
+        trojanized -> downstream customers infected.
+
+2024 --- XZ Utils Backdoor
+        Sophisticated multi-year social engineering
+        planted a backdoor in SSH (narrowly caught).
+
+2025 --- Bybit / Lazarus
+        $1.5B crypto theft via supply chain compromise
+        of safe{Wallet} multisig deployment process.</pre>
+
+## Timeline (cont.)
+.background images/golang_slide_blue.png
+
+<pre>2026 --- Mini Shai-Hulud npm Worm (May-Jun)
+        Self-replicating worm on npm stealing GitHub
+        developer credentials. Affected GitHub, OpenAI, Mercor.
+        187+ packages infected.
+
+2026 --- DAEMON Tools Installer Backdoor (May)
+        Official installers trojanized with backdoor
+        via compromised build pipeline. Signed with
+        legitimate certs. Highly targeted APT campaign.
+
+2026 --- Vercel / OAuth Supply Chain Breach (Apr)
+        Attackers breached Vercel via OAuth token theft
+        from third-party integration provider,
+        compromising downstream customer deployments.</pre>
+
+## Why Does It Matter? — Zero-Day Response
+.background images/golang_slide_blue.png
+
+*Without SBOM:* "We have Log4Shell somewhere... good luck finding it."
+
+*With SBOM:* <code>grep log4j sbom.json</code> - instantly know:
+- Which products are affected
+- Which versions
+- Where each component lives
+- Whether it's reachable from attack surface
+
+Log4Shell example: Companies *without* SBOMs spent *weeks* inventorying. Companies *with* SBOMs knew in *minutes*.
+
+## Vulnerability Management
+.background images/golang_slide_blue.png
+
+SBOM + vulnerability database = continuous monitoring:
+
+<pre>SBOM ---> grype/govulncheck ---> "log4j-core@2.14.1 has CVE-2021-44228"
+                                 "golang.org/x/text@v0.0.0-201709... has GO-2022-1059"</pre>
+
+## License Compliance
+.background images/golang_slide_blue.png
+
+- 96% of commercial codebases contain open-source
+- 70-90% of a typical codebase is open-source
+- SBOMs track every license: MIT, GPL, Apache, proprietary...
+
+Avoid legal risk from license violations.
+
+## Government & Regulatory Mandates
+.background images/golang_slide_blue.png
+
+<table>
+<thead>
+<tr><td><b>Mandate</b></td><td><b>Region</b></td><td><b>Requirement</b></td></tr>
+</thead>
+<tbody>
+<tr><td>US Executive Order 14028 (2021)</td><td>USA</td><td>"Provide an SBOM for any software sold to the government"</td></tr>
+<tr><td>CISA SBOM Framework</td><td>USA</td><td>Minimum elements: supplier, component, version, hash, dependencies</td></tr>
+<tr><td>EU Cyber Resilience Act</td><td>EU</td><td>Mandatory SBOM for digital products</td></tr>
+<tr><td>NTIA "Minimum Elements"</td><td>USA</td><td>Baseline SBOM requirements</td></tr>
+</tbody>
+</table>
+
+## Government & Regulatory Mandates (cont.)
+.background images/golang_slide_blue.png
+
+<table>
+<thead>
+<tr><td><b>Mandate</b></td><td><b>Region</b></td><td><b>Requirement</b></td></tr>
+</thead>
+<tbody>
+<tr><td>CCCS Supply Chain Guidance (2022)</td><td>Canada</td><td>"The cyber threat from supply chains" — official guidance from the Canadian Centre for Cyber Security on software supply chain risks; aligns with international SBOM best practices</td></tr>
+</tbody>
+</table>
+
+SBOMs are no longer optional. They are becoming a *legal requirement* for software procurement.
+
+Canadian context: While Canada has no SBOM-specific law yet, the CCCS guidance sets the expectation for due diligence. Canadian companies selling to US/EU markets must comply with EO 14028 and the CRA. Several Canadian provinces are watching these frameworks closely.
+
+## Trust & Transparency
+.background images/golang_slide_blue.png
+
+- *Procurement:* "Show me your SBOM before I buy your software."
+- *Vendors:* Publish SBOMs to prove you've done your homework.
+- *Customers:* Import vendor SBOMs into your own vulnerability management.
+
+## Where Is It Used? — The SBOM Lifecycle
+.background images/golang_slide_blue.png
+
+<pre>                    +-------------+
+                    |   Develop   |
+                    | (go.mod)    |
+                    +------+------+
+                           |
+                    +------v------+
+                    |   Build     | <--- Generate SBOM (syft/cyclonedx-gomod)
+                    | (binary)    |
+                    +------+------+
+                           |
+              +------------+------------+------------+
+              |            |            |            |
+        +-----v----+ +----v----+ +-----v----+ +-----v----+
+        |  Store   | |  Scan   | |  Ship    | |  Monitor |
+        | (SBOM DB)| | (grype) | | (+SBOM)  | | (CVE)    |
+        +----------+ +---------+ +----------+ +----------+</pre>
+
+## Key Players in the Ecosystem
+.background images/golang_slide_blue.png
+
+<table>
+<thead>
+<tr><td><b>Tool</b></td><td><b>Creator</b></td><td><b>What It Does</b></td></tr>
+</thead>
+<tbody>
+<tr><td>Syft</td><td>Anchore</td><td>SBOM generator (any language / container)</td></tr>
+<tr><td>Grype</td><td>Anchore</td><td>Vulnerability scanner (uses SBOMs)</td></tr>
+<tr><td>cyclonedx-gomod</td><td>OWASP</td><td>CycloneDX SBOM from Go modules</td></tr>
+<tr><td>Trivy</td><td>Aqua Security</td><td>All-in-one scanner (SBOM + vulns)</td></tr>
+<tr><td>bom</td><td>Google</td><td>SPDX SBOM generator</td></tr>
+<tr><td>Govulncheck</td><td>Go team</td><td>Go-native vulnerability checker</td></tr>
+</tbody>
+</table>
+
+## SBOM Formats — Deep Dive
+.background images/golang_slide_blue.png
+
+Three major formats dominate. Each has a different origin story, philosophy, and sweet spot.
+
+<table>
+<thead>
+<tr><td><b>Format</b></td><td><b>Standard</b></td><td><b>Maintainer</b></td><td><b>First Published</b></td><td><b>Primary Focus</b></td></tr>
+</thead>
+<tbody>
+<tr><td>SPDX</td><td>ISO/IEC 5962:2021</td><td>Linux Foundation</td><td>2011</td><td>License compliance / general BOM</td></tr>
+<tr><td>CycloneDX</td><td>OWASP standard</td><td>OWASP Flagship</td><td>2017</td><td>Security & vulnerability mgmt</td></tr>
+<tr><td>SWID</td><td>ISO/IEC 19770-2</td><td>ISO / IEC</td><td>2015</td><td>Software identification & asset mgmt</td></tr>
+</tbody>
+</table>
+
+## SPDX — The ISO Standard Workhorse
+.background images/golang_slide_blue.png
+
+*History:* Born in 2011 from the Linux Foundation's need to track open-source licenses. The *oldest* SBOM format. Became ISO/IEC 5962:2021. Latest version: SPDX 3.0.1.
+
+*Original purpose:* License compliance - identifying every open-source license in a codebase.
+
+*Today:* A general-purpose BOM format expanded far beyond software:
+
+<table>
+<thead>
+<tr><td><b>SPDX Profile</b></td><td><b>What It Describes</b></td></tr>
+</thead>
+<tbody>
+<tr><td>Software</td><td>Traditional software components, packages, files</td></tr>
+<tr><td>Security</td><td>Vulnerabilities, CVEs, advisory references</td></tr>
+<tr><td>Build</td><td>Build process metadata, build artifacts, SLSA provenance</td></tr>
+<tr><td>AI / ML</td><td>AI models, datasets, training data, hyperparameters</td></tr>
+<tr><td>Dataset</td><td>Data packages and collections</td></tr>
+<tr><td>Licensing</td><td>License expressions, copyrights (its original core)</td></tr>
+</tbody>
+</table>
+
+## SPDX — Strengths & Weaknesses
+.background images/golang_slide_blue.png
+
+*Strengths:*
+- Mature ecosystem - 15+ years of tooling, validation, and adoption
+- ISO status - de jure international standard for government procurement
+- Broadcast scope - the only format with AI/ML profiles (critical for 2025+)
+- License-first DNA - unmatched for compliance workflows
+- Rich relationship modeling in SPDX 3.0
+
+*Best for:* Government compliance, license auditing, multi-artifact ecosystems.
+
+*Weaknesses:* Verbose XML/JSON, steep learning curve for full spec.
+
+## SPDX — Example Snippet
+.background images/golang_slide_blue.png
+
+<pre><code class="hljs">{
+  "spdxVersion": "SPDX-2.3",
+  "dataLicense": "CC0-1.0",
+  "packages": [{
+    "name": "golang.org/x/text",
+    "versionInfo": "v0.14.0",
+    "licenseConcluded": "BSD-3-Clause",
+    "externalRefs": [{
+      "referenceCategory": "SECURITY",
+      "referenceType": "cpe23Type",
+      "referenceLocator": "cpe:2.3:a:golang:text:0.14.0:*:*:*:*:*:*:*"
+    }]
+  }]
+}</code></pre>
+
+## CycloneDX — Security-First, Purpose-Built
+.background images/golang_slide_blue.png
+
+*History:* Created in 2017 by the OWASP community specifically for *application security*. OWASP Flagship Project. The fastest-growing SBOM format.
+
+*Original purpose:* Security vulnerability tracking - which components have which CVEs.
+
+
+<table>
+<thead>
+<tr><td><b>BOM Type</b></td><td><b>Purpose</b></td></tr>
+</thead>
+<tbody>
+<tr><td>SBOM</td><td>Standard software component inventory</td></tr>
+<tr><td>SaaSBOM</td><td>Service BOM — APIs, endpoints, service deps</td></tr>
+<tr><td>HBOM</td><td>Hardware BOM — firmware, chips, devices</td></tr>
+<tr><td>ML-BOM</td><td>Machine Learning — models, datasets, weights</td></tr>
+<tr><td>CBOM</td><td>Cryptography BOM — algorithms, key sizes, certs</td></tr>
+<tr><td>OBOM</td><td>Operations BOM — infrastructure, deployment</td></tr>
+<tr><td>VEX</td><td>Vulnerability Exploitability eXchange</td></tr>
+<tr><td>BOM-Link</td><td>Cross-BOM references</td></tr>
+</tbody>
+</table>
+
+## CycloneDX — Strengths & Weaknesses
+.background images/golang_slide_blue.png
+
+*Strengths:*
+- Security-native - designed hand-in-hand with vulnerability databases
+- Lightweight - simpler schema than SPDX, faster to parse and validate
+- Best vulnerability tooling - native support in Grype, Trivy, Dependency-Track
+- VEX built-in - attach exploitability analysis directly to the BOM
+- Service awareness - unique ability to document API dependencies
+
+*Best for:* Security teams, vulnerability management pipelines, container scanning, microservice architectures.
+
+*Key difference from SPDX:*
+SPDX is a *license-compliance format that added security.*
+CycloneDX is a *security format that added license tracking.*
+
+## CycloneDX — Example Snippet
+.background images/golang_slide_blue.png
+
+<pre><code class="hljs">{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "components": [{
+    "type": "library",
+    "name": "golang.org/x/text",
+    "version": "v0.14.0",
+    "licenses": [{"license": {"id": "BSD-3-Clause"}}],
+    "purl": "pkg:golang/golang.org/x/text@v0.14.0",
+    "properties": [{
+      "name": "aquasecurity:trivy:SHA256",
+      "value": "aa0398e9681939a4e4208322563050730"
+    }]
+  }]
+}</code></pre>
+
+## SWID — The Enterprise Asset Tag
+.background images/golang_slide_blue.png
+
+*History:* ISO/IEC 19770-2:2015. Designed by the *IT asset management (ITAM)* community, not developers.
+
+*Original purpose:* Identify installed software on enterprise endpoints for inventory and license compliance.
+
+*Strengths:*
+- Installation-aware - tracks *which* software is *actually installed* on a machine
+- Microsoft ecosystem - deeply integrated into Windows (MSI installers generate SWID tags)
+- Enterprise procurement - used by SAM tools for license reconciliation
+- Granular identification - tags per-installation, not per-package
+
+*Weaknesses:* Poor at transitive deps, limited cloud-native tooling, XML-only, less community momentum.
+
+## How They Fit Together
+.background images/golang_slide_blue.png
+
+<pre><center>
++--------------------------------------+
+|            SBOM Ecosystem            |
+|                                      |
+|    SPDX <--> CycloneDX <--> SWID     |
+|      |          |            |       |
+|   License    Security    Asset Mgmt  |
+|  Compliance   Vulns      Inventory   |
++--------------------------------------+
+</center></pre>
+<pre>
+Tools like Syft/Grype support ALL formats:
+  syft dir:. -o spdx-json
+  syft dir:. -o cyclonedx-json
+  syft dir:. -o spdx-tag-value
+</pre>
+
+## Which Format Should You Use?
+.background images/golang_slide_blue.png
+
+<table>
+<thead>
+<tr><td><b>If you care about...</b></td><td><b>Choose...</b></td><td><b>Why</b></td></tr>
+</thead>
+<tbody>
+<tr><td>Government compliance</td><td>SPDX</td><td>ISO standard, referenced in EO 14028</td></tr>
+<tr><td>Vulnerability management</td><td>CycloneDX</td><td>Best CVE tooling, VEX, CBOM</td></tr>
+<tr><td>License auditing</td><td>SPDX</td><td>License-first DNA, 15+ years maturity</td></tr>
+<tr><td>Enterprise asset inventory</td><td>SWID</td><td>MSI/Windows integration, SAM tools</td></tr>
+<tr><td>AI/ML model governance</td><td>SPDX</td><td>AI Profile in SPDX 3.0</td></tr>
+<tr><td>Container scanning / CI/CD</td><td>Both</td><td>Most tools output both formats</td></tr>
+<tr><td>API dependency tracking</td><td>CycloneDX</td><td>SaaSBOM — unique to CycloneDX</td></tr>
+<tr><td>Crypto inventory (post-quantum)</td><td>CycloneDX</td><td>CBOM — unique to CycloneDX</td></tr>
+</tbody>
+</table>
+
+## Which Format Should You Use? (cont.)
+.background images/golang_slide_blue.png
+
+Pragmatic advice: Generate *both* SPDX and CycloneDX from your build pipeline:
+
+<pre>syft dir:. -o spdx-json=sbom.spdx.json -o cyclonedx-json=sbom.cdx.json</pre>
+
+The cost of generating both is near zero.
+
+## SBOM in Go — Built-in Superpowers
+.background images/golang_slide_blue.png
+
+Go has *first-class SBOM support baked into the toolchain.*
+
+- `go.mod` -- Your dependency manifest
+- `go.sum` -- Tamper-proof checksum database
+- `go version -m` — SBOM embedded in every binary
+- `debug/buildinfo` — Programmatic SBOM extraction
+- `govulncheck` — Go-native vulnerability scanner
+- Syft / Grype — Full SBOM generation and scanning
+
+## go.mod — Your Dependency Manifest
+.background images/golang_slide_blue.png
+
+<pre><code class="hljs">module myapp
+
+go 1.26.4
+
+require (
+    github.com/gorilla/mux v1.8.1
+    golang.org/x/text v0.14.0
+)</code></pre>
+
+Every Go project already has a *partial SBOM* — it lists all direct and indirect dependencies.
+
+## go.sum — Integrity Verification
+.background images/golang_slide_blue.png
+
+<pre>golang.org/x/text v0.14.0 h1:ScY5V9QhFnNN...=
+golang.org/x/text v0.14.0/go.mod h1:12V0...=</pre>
+
+*Purpose:* Tamper-proof checksums. Verify every download against the Go checksum database (sum.golang.org).
+
+*This is supply chain security built-in.*
+
+## go version -m — SBOM Embedded in Every Binary
+.background images/golang_slide_blue.png
+
+<pre><code class="hljs">$ go version -m myapp
+myapp: go1.26.4
+    path    github.com/myapp
+    mod     myapp    (devel)
+    dep     github.com/gorilla/mux    v1.8.1    h1:Tu5M...
+    dep     golang.org/x/text         v0.14.0   h1:ScY...
+    build   -buildmode=exe
+    build   -compiler=gc
+    build   GOARCH=amd64
+    build   GOOS=linux</code></pre>
+
+Every Go binary is *self-describing.* The dependency tree is embedded at compile time. No external SBOM file required.
+
+## debug/buildinfo — Programmatic Access
+.background images/golang_slide_blue.png
+
+<pre><code class="hljs">package main
+
+import (
+    "debug/buildinfo"
+    "fmt"
+    "os"
+)
+
+func main() {
+    f, _ := os.Open("myapp")
+    defer f.Close()
+
+    info, _ := buildinfo.Read(f)
+    fmt.Println("Go version:", info.GoVersion)
+    fmt.Println("Dependencies:")
+    for _, dep := range info.Deps {
+        fmt.Printf("  %s@%s\n", dep.Path, dep.Version)
+    }
+}</code></pre>
+
+## debug/buildinfo — Output
+.background images/golang_slide_blue.png
+
+Every Go binary carries its own *machine-readable SBOM:*
+
+<pre>Go version: go1.26.4
+Dependencies:
+  github.com/gorilla/mux@v1.8.1
+  golang.org/x/text@v0.14.0</pre>
+
+## govulncheck — Go-Native Vulnerability Scanning
+.background images/golang_slide_blue.png
+
+<pre><code class="hljs">$ govulncheck ./...</code></pre>
+
+<pre>=== Symbol Results ===
+No vulnerabilities found.
+
+=== Package Results ===
+Vulnerability #1: GO-2022-1059
+    Denial of service in golang.org/x/text/language
+    Found in: golang.org/x/text@v0.0.0-20170915032832
+    Fixed in: golang.org/x/text@v0.3.8</pre>
+
+Key difference from generic scanners:
+- Uses Go's own vulnerability database (vuln.go.dev)
+- Tracks *reachability* — not just "this dep has a CVE" but "does your code actually call the vulnerable function?"
+- Reduces noise dramatically
+
+## Syft — Generate Full SBOM from Go Projects
+.background images/golang_slide_blue.png
+
+<pre><code class="hljs">$ syft dir:. -o spdx-json</code></pre>
+
+Produces a full SPDX 2.3 document with every Go module, license, checksum, and CPE/PURL identifiers.
+
+<pre><code class="hljs">$ syft dir:. -o cyclonedx-json</code></pre>
+
+Same in CycloneDX format.
+
+## Grype — Scan SBOMs for CVEs
+.background images/golang_slide_blue.png
+
+<pre><code class="hljs">$ grype dir:.</code></pre>
+
+<pre>NAME               INSTALLED    FIXED IN  VULNERABILITY   SEVERITY
+golang.org/x/text  v0.0.0-...  0.3.3      GO-2020-0015    High
+golang.org/x/text  v0.0.0-...  0.3.8      GO-2022-1059    High</pre>
+
+Works on the SBOM generated by Syft, or directly on the directory / container image.
+
+## Docs: End-to-End SBOM Pipeline in Go
+.background images/golang_slide_blue.png
+
+**1. Build your Go app**
+
+<pre><code class="hljs">$ go build -o myapp .</code></pre>
+
+**2. Extract built-in SBOM**
+
+<pre><code class="hljs">$ go version -m myapp</code></pre>
+
+**3. Generate SPDX SBOM**
+
+<pre><code class="hljs">$ syft dir:. -o spdx-json > sbom.spdx.json</code></pre>
+
+**4. Scan for vulnerabilities**
+
+<pre><code class="hljs">$ grype sbom:sbom.spdx.json</code></pre>
+
+**5. Use Go-native scanner**
+
+<pre><code class="hljs">$ govulncheck ./...</code></pre>
+
+## Docs: Embed in CI/CD
+.background images/golang_slide_blue.png
+
+<pre><code class="hljs"># .github/workflows/sbom.yml
+- name: Create SBOM
+  uses: anchore/sbom-action@v7
+  with:
+    format: spdx-json
+    output-file: "${{ github.event.repository.name }}-sbom.spdx.json"
+
+- name: Scan SBOM
+  uses: anchore/scan-action@v7
+  with:
+    sbom: "${{ github.event.repository.name }}-sbom.spdx.json"
+</code></pre>
+
+## Challenges & Limitations
+.background images/golang_slide_blue.png
+
+<table>
+  <tr>
+    <th>Challenge</th>
+    <th>Mitigation</th>
+  </tr>
+  <tr>
+    <td>SBOMs get stale</td>
+    <td>Regenerate on every build</td>
+  </tr>
+  <tr>
+    <td>Transitive dependencies</td>
+    <td>Depth matters — include all</td>
+  </tr>
+  <tr>
+    <td>False positives</td>
+    <td>Use reachability (govulncheck)</td>
+  </tr>
+  <tr>
+    <td>Format fragmentation</td>
+    <td>Both SPDX & CycloneDX are valid</td>
+  </tr>
+  <tr>
+    <td>Binary-only software</td>
+    <td>Use container image scanning (Syft)</td>
+  </tr>
+  <tr>
+    <td>Developer friction</td>
+    <td>Automate in CI/CD</td>
+  </tr>
+</table>
+
+## Key Takeaways
+.background images/golang_slide_blue.png
+
+1. *SBOMs are the ingredient label for software* — know everything in your stack
+2. *Supply chain attacks are the new normal* — Log4j, SolarWinds, 3CX, XZ Utils, and 2026's Mini Shai-Hulud worm & DAEMON Tools backdoor
+3. *Governments are mandating SBOMs* — US EO 14028, EU Cyber Resilience Act
+4. *Go has SBOM built-in* — go.mod, go.sum, go version -m, debug/buildinfo
+5. *Free tools exist* — Syft, Grype, govulncheck, CycloneDX-gomod
+6. *Automate or fail* — CI/CD pipeline integration is essential
+
+## Resources
+.background images/golang_slide_blue.png
+
+- CISA SBOM Framework — [cisa.gov/sbom](https://cisa.gov/sbom)
+- SPDX Specification (ISO 5962) — [spdx.dev](https://spdx.dev)
+- CycloneDX — [cyclonedx.org](https://cyclonedx.org)
+- Syft — [github.com/anchore/syft](https://github.com/anchore/syft)
+- Grype — [github.com/anchore/grype](https://github.com/anchore/grype)
+- govulncheck — [pkg.go.dev/golang.org/x/vuln/cmd/govulncheck](https://pkg.go.dev/golang.org/x/vuln/cmd/govulncheck)
+- CycloneDX-gomod — [github.com/CycloneDX/cyclonedx-gomod](https://github.com/CycloneDX/cyclonedx-gomod)
+- Go Vulnerability Database — [vuln.go.dev](https://vuln.go.dev)
+- Go debug/buildinfo — [pkg.go.dev/debug/buildinfo](https://pkg.go.dev/debug/buildinfo)
+
+## Thank You!
+.background images/golang_slide_blue.png
+
+Questions?
+
+Slides: github.com/edmontongo/presentations/2026-06/sbom
+
+*"If you can't measure it, you can't manage it."*
+— Applied to software supply chains: *If you don't have an SBOM, you don't know what you're shipping.*
